@@ -1,6 +1,378 @@
+/* ==========================================================================
+   TAILWIND CSS v4 - Import First
+   ========================================================================== */
+
 @import "tailwindcss";
 
+/* ==========================================================================
+   DESIGN TOKENS - Theme Configuration
+   ========================================================================== */
+
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  /* --------------------------------------------------------------------------
+     Typography - Font Families
+     -------------------------------------------------------------------------- */
+  --font-family-merriweather: var(--font-merriweather-family), serif;
+  --font-family-open-sans: var(--font-open-sans-family), sans-serif;
+  --font-family-poppins: var(--font-poppins-family), sans-serif;
+  --font-family-lato: var(--font-lato-family), sans-serif;
+  --font-family-montserrat: var(--font-montserrat-family), sans-serif;
+  --font-family-sans: var(--font-geist-sans), ui-sans-serif, system-ui,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
+
+  /* --------------------------------------------------------------------------
+     Layout - Responsive Container Widths
+     -------------------------------------------------------------------------- */
+  --container-max-width: min(100%, 767px);
+  --container-width-tablet: 600px;
+  --container-width-desktop: 700px;
+
+  /* --------------------------------------------------------------------------
+     Extended Tailwind Colors - Light Mode
+     -------------------------------------------------------------------------- */
+  --color-text-light: #4d4d4d;
+  --color-text-secondary-light: #6b7280;
+  --color-link-light: #a30047;
+  --color-link-hover-light: #7a0035;
+  --color-divider-light: #e8e8e8;
+  --color-home-title-light: #4a4e41;
+  --color-footer-text-light: #a8aab2;
+
+  /* --------------------------------------------------------------------------
+     Extended Tailwind Colors - Dark Mode
+     -------------------------------------------------------------------------- */
+  --color-bg-dark: #121217;
+  --color-text-dark: #e8e9f3;
+  --color-text-secondary-dark: #b5bac9;
+  --color-link-dark: #ff7fb5;
+  --color-link-hover-dark: #ff99c7;
+  --color-divider-dark: #2f2f38;
+  --color-home-title-dark: #d5d8cb;
+  --color-footer-text-dark: #7f8291;
+}
+
+/* ==========================================================================
+   BASE LAYER - HTML Element Defaults & Resets
+   ========================================================================== */
+
+@layer base {
+  /* Reset */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: white;
+    color: var(--color-text-light);
+    font-family: var(--font-family-open-sans);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  /* Dark mode body */
+  :is(.dark body) {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-dark);
+  }
+
+  /* Links */
+  a {
+    background-color: transparent;
+    color: var(--color-link-light);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  a:hover,
+  a:active {
+    color: var(--color-link-hover-light);
+  }
+
+  :is(.dark a) {
+    color: var(--color-link-dark);
+  }
+
+  :is(.dark a:hover),
+  :is(.dark a:active) {
+    color: var(--color-link-hover-dark);
+  }
+
+  /* Header links inherit text color */
+  header a {
+    color: inherit;
+  }
+
+  header a:hover,
+  header a:active {
+    color: inherit;
+  }
+
+  /* Typography - Headings */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: inherit;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-block-end: 1rem;
+    margin-block-start: 0.5rem;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  h3 {
+    font-size: 1.75rem;
+  }
+
+  /* Paragraphs */
+  p {
+    margin-block-end: 0.9rem;
+    margin-block-start: 0;
+  }
+
+  /* Horizontal dividers */
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-divider-light);
+    margin: 1.5rem 0;
+  }
+
+  :is(.dark hr) {
+    border-top-color: var(--color-divider-dark);
+  }
+}
+
+/* ==========================================================================
+   COMPONENTS LAYER - Semantic, Reusable Component Classes
+   ========================================================================== */
+
+@layer components {
+  /* --------------------------------------------------------------------------
+     Layout Components
+     -------------------------------------------------------------------------- */
+
+  .page-shell {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 1.25rem; /* 20px */
+    padding: 3rem 0 1.25rem; /* 48px top, 20px bottom */
+  }
+
+  .page-shell--home {
+    justify-content: center;
+    padding-top: 4rem; /* 64px */
+  }
+
+  .page-shell hr {
+    margin: 0;
+    border-color: var(--color-divider-light);
+  }
+
+  :is(.dark .page-shell hr) {
+    border-color: var(--color-divider-dark);
+  }
+
+  /* --------------------------------------------------------------------------
+     Header Components
+     -------------------------------------------------------------------------- */
+
+  .site-header {
+    width: 100%;
+    border-bottom: 1px solid var(--color-divider-light);
+    margin-bottom: 1.25rem; /* 20px */
+  }
+
+  :is(.dark .site-header) {
+    border-color: var(--color-divider-dark);
+  }
+
+  .site-title {
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--color-text-light);
+  }
+
+  :is(.dark .site-title) {
+    color: var(--color-text-dark);
+  }
+
+  /* --------------------------------------------------------------------------
+     Footer Components
+     -------------------------------------------------------------------------- */
+
+  .footer-container {
+    padding: 4rem 1.25rem 2rem; /* 64px top, 20px sides, 32px bottom */
+  }
+
+  .footer-text {
+    font-family: var(--font-family-montserrat);
+    font-size: 0.75rem; /* 12px */
+    color: var(--color-footer-text-light);
+  }
+
+  :is(.dark .footer-text) {
+    color: var(--color-footer-text-dark);
+  }
+
+  /* --------------------------------------------------------------------------
+     Typography Components
+     -------------------------------------------------------------------------- */
+
+  .page-title {
+    font-family: var(--font-family-merriweather);
+    font-size: 2rem;
+    font-weight: 525; /* Non-standard weight for Merriweather */
+    line-height: 1.2;
+    margin-top: 0;
+    margin-bottom: 1.25rem; /* 20px */
+    color: var(--color-text-light);
+  }
+
+  .page-title--home {
+    margin-top: 10px;
+    margin-bottom: -10px;
+    color: var(--color-home-title-light);
+  }
+
+  :is(.dark .page-title) {
+    color: var(--color-text-dark);
+  }
+
+  :is(.dark .page-title--home) {
+    color: var(--color-home-title-dark);
+  }
+
+  .page-subtitle {
+    font-family: var(--font-family-open-sans);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary-light);
+  }
+
+  :is(.dark .page-subtitle) {
+    color: var(--color-text-secondary-dark);
+  }
+
+  .section-heading {
+    font-family: var(--font-family-open-sans);
+    font-size: 1.125rem; /* 18px */
+    font-weight: 600;
+    margin-bottom: 0.5rem; /* 8px */
+    color: var(--color-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  :is(.dark .section-heading) {
+    color: var(--color-text-dark);
+  }
+
+  .body-copy {
+    font-family: var(--font-family-open-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-text-light);
+  }
+
+  .body-copy > * + * {
+    margin-top: 10px;
+  }
+
+  :is(.dark .body-copy) {
+    color: var(--color-text-dark);
+  }
+
+  /* --------------------------------------------------------------------------
+     Content Structure Components
+     -------------------------------------------------------------------------- */
+
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem; /* 20px */
+    color: var(--color-text-light);
+  }
+
+  :is(.dark .section) {
+    color: var(--color-text-dark);
+  }
+
+  .link-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    font-family: var(--font-family-open-sans);
+    margin-bottom: -10px;
+    color: var(--color-text-light);
+  }
+
+  :is(.dark .link-stack) {
+    color: var(--color-text-dark);
+  }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem; /* 20px */
+  }
+}
+
+/* ==========================================================================
+   UTILITY LAYER - Custom Utility Classes
+   ========================================================================== */
+
+@layer utilities {
+  /* Responsive container with custom widths */
+  .site-container {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: var(--container-max-width);
+    padding-left: 1.25rem; /* 20px */
+    padding-right: 1.25rem; /* 20px */
+  }
+
+  @media (min-width: 768px) {
+    .site-container {
+      max-width: var(--container-width-tablet);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .site-container {
+      max-width: var(--container-width-desktop);
+    }
+  }
+
+  /* Page container - simple flex wrapper */
+  .page-container {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
 }
