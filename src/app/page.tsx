@@ -4,9 +4,7 @@ export default function HomePage() {
   return (
     <div className="page-shell page-shell--home">
       {/* Main heading */}
-      <h1 className="page-title page-title--home">
-        Taslim Okunola
-      </h1>
+      <h1 className="page-title page-title--home">Taslim Okunola</h1>
 
       {/* Subtitle */}
       <p className="page-subtitle">
@@ -19,7 +17,11 @@ export default function HomePage() {
           <Link href="/blog">Blog</Link>
         </p>
         <p>
-          <a href="https://angle.africa" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://angle.africa"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             angle.africa →
           </a>
         </p>

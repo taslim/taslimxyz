@@ -1,14 +1,45 @@
 import "@/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Geist, Merriweather, Open_Sans, Poppins, Lato, Montserrat } from "next/font/google";
+import {
+  Geist,
+  Merriweather,
+  Open_Sans,
+  Poppins,
+  Lato,
+  Montserrat,
+} from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "Taslim Okunola - Product | Strategy | Marketing",
-  description: "Taslim Okunola is a Strategy and Operations Manager at Google. He helps product leaders answer big business questions.",
+  metadataBase: new URL("https://www.taslim.xyz"),
+  title: {
+    default: "Taslim Okunola - Product | Strategy | Marketing",
+    template: "%s - Taslim Okunola",
+  },
+  description:
+    "Taslim Okunola is a Strategy and Operations Manager at Google. He helps product leaders answer big business questions.",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://taslim.xyz",
+    siteName: "Taslim Okunola - Product | Strategy | Marketing",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Taslim Okunola",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@taslimxyz",
+    creator: "@taslimxyz",
+  },
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -56,8 +87,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html 
-      lang="en" 
+    <html
+      lang="en"
       className={`${geist.variable} ${merriweather.variable} ${openSans.variable} ${poppins.variable} ${lato.variable} ${montserrat.variable}`}
       suppressHydrationWarning
     >
@@ -66,9 +97,7 @@ export default function RootLayout({
           <Header />
           <main>
             <div className="site-container">
-              <div className="page-container">
-                {children}
-              </div>
+              <div className="page-container">{children}</div>
             </div>
           </main>
           <Footer />

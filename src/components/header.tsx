@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 export function Header() {
   const pathname = usePathname();
-  
+
   // No header on homepage
   if (pathname === "/") {
     return null;
@@ -16,7 +16,7 @@ export function Header() {
   const linkHref = isPostPage ? "/blog" : "/";
 
   return (
-    <header className="site-header">
+    <header className="site-header w-full">
       <div className="site-container">
         <h2 className="site-title">
           <Link
@@ -30,4 +30,3 @@ export function Header() {
     </header>
   );
 }
-
