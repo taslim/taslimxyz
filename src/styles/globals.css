@@ -54,14 +54,15 @@
   --page-padding-y: 1.25rem;
   --page-padding-top-default: 3rem;
   --page-padding-top-home: 4rem;
-  --page-gap: 20px;
+  --home-page-gap: 20px;
+  --page-gap: 5px;
   --link-stack-gap: 0.1rem;
   --link-stack-margin-bottom: -10px;
 
   /* Page title tokens */
   --page-title-font-family: var(--font-merriweather);
   --page-title-font-size: 2rem;
-  --page-title-font-weight: 525;
+  --page-title-font-weight: 600;
   --page-title-margin-top-default: 0;
   --page-title-margin-top-home: 10px;
   --page-title-margin-bottom: -10px;
@@ -247,6 +248,7 @@ hr {
 .page-shell--home {
   justify-content: center;
   padding-top: var(--page-padding-top-home);
+  gap: var(--home-page-gap);
 }
 
 .page-shell hr {
@@ -291,7 +293,7 @@ hr {
 .site-title {
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
   font-size: 17px;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--color-text);
@@ -449,7 +451,7 @@ hr {
   font-size: 1.75rem;
   font-weight: 600;
   line-height: 1.4;
-  margin-bottom: 1rem;
+  margin-bottom: 0.25rem;
 }
 
 .blog-post-meta {
