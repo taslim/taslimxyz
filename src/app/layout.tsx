@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
 
+import { Suspense } from "react";
 import { type Metadata } from "next";
 import {
   Geist,
@@ -12,6 +13,10 @@ import {
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { analytics } from "@/lib/analytics";
+import { AnalyticsClient } from "@/components/analytics-client";
+import { WebVitalsReporter } from "@/components/web-vitals-reporter";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.taslim.xyz"),
@@ -83,6 +88,8 @@ const montserrat = Montserrat({
   variable: "--font-montserrat-family",
 });
 
+const gaMeasurementId = analytics.measurementId;
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -102,6 +109,15 @@ export default function RootLayout({
           </main>
           <Footer />
         </ThemeProvider>
+        {gaMeasurementId ? (
+          <>
+            <Suspense fallback={null}>
+              <AnalyticsClient />
+            </Suspense>
+            <WebVitalsReporter />
+            <GoogleAnalytics gaId={gaMeasurementId} />
+          </>
+        ) : null}
       </body>
     </html>
   );

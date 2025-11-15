@@ -1,54 +1,66 @@
+import { isValidElement, type ReactNode } from "react";
+
 export interface CommentProps {
-  children?: React.ReactNode;
+  children?: ReactNode;
   content?: string;
 }
 
 /**
- * Parses a markdown link [text](url) from children
+ * Parses a markdown link [text](url) from a plain string.
  */
-function parseMarkdownLink(children: React.ReactNode): {
-  text: string;
-  url: string;
-} | null {
-  // Only parse if children is a string
-  if (typeof children !== "string") {
+function parseMarkdownLink(text: string): { text: string; url: string } | null {
+  const linkRegex = /^\[([^\]]+)\]\(([^)]+)\)$/;
+  const match = linkRegex.exec(text.trim());
+
+  if (!match) {
     return null;
   }
 
-  // Match markdown link pattern: [text](url)
-  const linkRegex = /^\[([^\]]+)\]\(([^)]+)\)$/;
-  const linkMatch = linkRegex.exec(children);
+  const [, linkText, linkUrl] = match;
 
-  if (linkMatch?.[1] && linkMatch?.[2]) {
-    return {
-      text: linkMatch[1],
-      url: linkMatch[2],
-    };
+  if (!linkText || !linkUrl) {
+    return null;
   }
 
-  return null;
+  return {
+    text: linkText,
+    url: linkUrl,
+  };
 }
 
 export function Comment({ children, content }: CommentProps) {
-  const text = content ?? children;
-  const parsedLink = parseMarkdownLink(text);
+  // If explicit string content is provided, treat it as markdown
+  if (typeof content === "string") {
+    const parsedLink = parseMarkdownLink(content);
 
-  if (parsedLink) {
+    const inner = parsedLink ? (
+      <a href={parsedLink.url} target="_blank" rel="noopener noreferrer">
+        {parsedLink.text}
+      </a>
+    ) : (
+      content
+    );
+
     return (
       <p className="blog-comment">
-        <strong>
-          <a href={parsedLink.url} target="_blank" rel="noopener noreferrer">
-            {parsedLink.text}
-          </a>
-        </strong>
+        <strong>{inner}</strong>
       </p>
     );
   }
 
-  // Fallback: render text as-is
+  // Default MDX path: unwrap a single <p> wrapper if present
+  const effectiveChildren =
+    isValidElement(children) &&
+    children.type === "p" &&
+    typeof children.props === "object" &&
+    children.props !== null &&
+    "children" in children.props
+      ? (children.props as { children: ReactNode }).children
+      : children;
+
   return (
     <p className="blog-comment">
-      <strong>{text}</strong>
+      <strong>{effectiveChildren}</strong>
     </p>
   );
 }

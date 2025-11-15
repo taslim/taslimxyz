@@ -6,6 +6,7 @@ export interface FigureProps {
   caption?: string;
   width?: number;
   height?: number;
+  priority?: boolean;
 }
 
 /**
@@ -50,7 +51,14 @@ function parseMarkdownLinks(text: string): React.ReactNode {
   return parts.length > 0 ? parts : text;
 }
 
-export function Figure({ src, alt, caption, width, height }: FigureProps) {
+export function Figure({
+  src,
+  alt,
+  caption,
+  width,
+  height,
+  priority,
+}: FigureProps) {
   // If src is a StaticImageData (imported image), Next.js handles dimensions automatically.
   // If it's a string, we need explicit width/height (default to 800x600 for backwards compat).
   const isStaticImage = typeof src !== "string";
@@ -63,6 +71,7 @@ export function Figure({ src, alt, caption, width, height }: FigureProps) {
         width={isStaticImage ? undefined : (width ?? 800)}
         height={isStaticImage ? undefined : (height ?? 600)}
         className="blog-figure__image"
+        priority={priority}
       />
       {caption && (
         <figcaption className="blog-figure__caption">
