@@ -113,12 +113,12 @@ export default function RootLayout({
           <>
             <AnalyticsClient />
             <WebVitalsReporter />
+            {gaMeasurementId ? (
+              <GoogleAnalytics gaId={gaMeasurementId} />
+            ) : null}
           </>
         ) : null}
       </body>
-      {isAnalyticsEnabled && gaMeasurementId ? (
-        <GoogleAnalytics gaId={gaMeasurementId} />
-      ) : null}
     </html>
   );
 }
