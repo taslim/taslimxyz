@@ -6,6 +6,7 @@ export interface BlogPost {
   slug: string;
   title: string;
   publishedAt: string;
+  updatedAt?: string;
   summary: string;
   tags?: string[];
 }
@@ -26,7 +27,15 @@ export function getBlogPosts(): BlogPost[] {
     return [];
   }
 
-  const files = fs.readdirSync(postsDir).filter((f) => f.endsWith(".mdx"));
+  const files = fs
+    .readdirSync(postsDir)
+    .filter((f) => f.endsWith(".mdx"))
+    .filter((f) => {
+      // Exclude files in the drafts subdirectory
+      const filePath = path.join(postsDir, f);
+      const stats = fs.statSync(filePath);
+      return stats.isFile();
+    });
 
   return files
     .map((filename) => {
@@ -38,6 +47,7 @@ export function getBlogPosts(): BlogPost[] {
         slug: filename.replace(".mdx", ""),
         title: data.title as string,
         publishedAt: data.publishedAt as string,
+        updatedAt: data.updatedAt as string | undefined,
         summary: data.summary as string,
         tags: (data.tags as string[]) || [],
       };
@@ -60,6 +70,7 @@ export function getPost(slug: string): BlogPostWithContent {
     slug,
     title: data.title as string,
     publishedAt: data.publishedAt as string,
+    updatedAt: data.updatedAt as string | undefined,
     summary: data.summary as string,
     tags: (data.tags as string[]) || [],
     content,

@@ -48,3 +48,6 @@ yarn-error.log*
 # temp files
 docs
 legacy
+
+# blog drafts (work in progress, not published yet)
+src/content/blog/drafts/*.mdx
