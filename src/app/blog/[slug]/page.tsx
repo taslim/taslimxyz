@@ -1,7 +1,7 @@
 import { compileMDX } from "next-mdx-remote/rsc";
 import { getBlogPosts, getPost } from "@/lib/blog";
 import { format } from "date-fns";
-import { Figure, Callout } from "@/components/mdx";
+import { Figure, Callout, Tweet } from "@/components/mdx";
 import rehypePrettyCode from "rehype-pretty-code";
 import { type Metadata } from "next";
 import { type Element } from "hast";
@@ -73,6 +73,7 @@ export default async function BlogPostPage({
     components: {
       Figure,
       Callout,
+      Tweet,
     },
   });
 

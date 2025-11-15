@@ -191,8 +191,12 @@ for (const filename of selected) {
         fs.unlinkSync(tempFilePath);
       } catch (cleanupError) {
         // Log cleanup failure but don't mask the original error
+        const cleanupMessage =
+          cleanupError instanceof Error
+            ? cleanupError.message
+            : "Unknown error";
         console.error(
-          `   Warning: Failed to clean up temp file ${tempFilePath}`,
+          `   Warning: Failed to clean up temp file ${tempFilePath}: ${cleanupMessage}`,
         );
       }
     }
