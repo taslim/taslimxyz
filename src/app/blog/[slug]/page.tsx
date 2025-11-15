@@ -101,8 +101,9 @@ export default async function BlogPostPage({
     },
   });
 
-  // Format the date
-  const formattedDate = format(new Date(post.publishedAt), "MMMM d, yyyy");
+  // Format the date - parse components to avoid timezone issues
+  const [year, month, day] = post.publishedAt.split('-').map(Number) as [number, number, number];
+  const formattedDate = format(new Date(year, month - 1, day), "MMMM d, yyyy");
 
   return (
     <div className="page-shell">
