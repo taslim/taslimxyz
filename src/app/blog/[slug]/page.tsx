@@ -10,6 +10,7 @@ import {
   Link,
   Comment,
 } from "@/components/mdx";
+import { remarkMdxFigurePriority } from "@/lib/remark-mdx-figure-priority";
 import rehypePrettyCode from "rehype-pretty-code";
 import { type Metadata } from "next";
 import { type Element } from "hast";
@@ -91,6 +92,7 @@ export default async function BlogPostPage({
     options: {
       parseFrontmatter: true,
       mdxOptions: {
+        remarkPlugins: [remarkMdxFigurePriority],
         rehypePlugins: [
           [
             rehypePrettyCode,
