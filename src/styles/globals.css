@@ -681,6 +681,19 @@ hr {
   color: var(--color-dark-text-secondary);
 }
 
+/* Blog credits */
+.blog-credits {
+  font-family: var(--blog-body-font-family);
+  font-size: 0.875rem;
+  font-style: italic;
+  color: var(--color-text-secondary);
+  margin-top: 2.5rem;
+}
+
+.dark .blog-credits {
+  color: var(--color-dark-text-secondary);
+}
+
 /* Blog callouts */
 .blog-callout {
   font-family: var(--blog-body-font-family);

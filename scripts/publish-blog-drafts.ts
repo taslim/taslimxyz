@@ -15,14 +15,7 @@ interface DraftFrontmatter {
   tags?: string[];
 }
 
-const draftsDir = path.join(
-  __dirname,
-  "..",
-  "src",
-  "content",
-  "blog",
-  "drafts",
-);
+const draftsDir = path.join(__dirname, "..", "src", "content", "drafts");
 const publishedDir = path.join(__dirname, "..", "src", "content", "blog");
 
 // Check if drafts directory exists
@@ -123,7 +116,19 @@ for (const slug of selected) {
     continue;
   }
 
-  const targetDirPath = path.join(publishedDir, slug);
+  // Determine the year from publishedAt or use current year
+  const publishYear = frontmatter.publishedAt
+    ? new Date(frontmatter.publishedAt).getFullYear().toString()
+    : new Date().getFullYear().toString();
+
+  const yearDir = path.join(publishedDir, publishYear);
+
+  // Ensure year directory exists
+  if (!fs.existsSync(yearDir)) {
+    fs.mkdirSync(yearDir, { recursive: true });
+  }
+
+  const targetDirPath = path.join(yearDir, slug);
 
   // Check if directory already exists in target
   if (fs.existsSync(targetDirPath)) {

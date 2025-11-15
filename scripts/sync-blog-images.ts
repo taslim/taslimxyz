@@ -32,50 +32,62 @@ if (!fs.existsSync(publicRoot)) {
 
 const entries = fs.readdirSync(contentRoot);
 
-// Collect current post slugs (directories under src/content/blog, excluding drafts/)
+// Collect current post slugs (directories under year folders in src/content/blog/)
 const currentSlugs = new Set<string>();
 
+// Process year directories (e.g., 2024, 2025)
 for (const entry of entries) {
   const entryPath = path.join(contentRoot, entry);
   const stats = fs.statSync(entryPath);
 
-  if (!stats.isDirectory() || entry === "drafts") {
+  // Only process directories that look like years (4 digits)
+  if (!stats.isDirectory() || !/^\d{4}$/.test(entry)) {
     continue;
   }
 
-  currentSlugs.add(entry);
+  // Process posts within each year directory
+  const postDirs = fs.readdirSync(entryPath);
 
-  const slug = entry;
-  const postDir = entryPath;
-  const publicDir = path.join(publicRoot, slug);
+  for (const slug of postDirs) {
+    const postDir = path.join(entryPath, slug);
+    const postStats = fs.statSync(postDir);
 
-  // Remove any existing files for this slug in public to keep in sync
-  if (fs.existsSync(publicDir)) {
-    fs.rmSync(publicDir, { recursive: true, force: true });
-  }
-  fs.mkdirSync(publicDir, { recursive: true });
-
-  const files = fs.readdirSync(postDir);
-
-  for (const file of files) {
-    const srcPath = path.join(postDir, file);
-    const fileStats = fs.statSync(srcPath);
-
-    if (!fileStats.isFile()) {
+    if (!postStats.isDirectory()) {
       continue;
     }
 
-    const ext = path.extname(file).toLowerCase();
+    currentSlugs.add(slug);
 
-    if (!IMAGE_EXTENSIONS.has(ext)) {
-      continue;
+    const publicDir = path.join(publicRoot, slug);
+
+    // Remove any existing files for this slug in public to keep in sync
+    if (fs.existsSync(publicDir)) {
+      fs.rmSync(publicDir, { recursive: true, force: true });
+    }
+    fs.mkdirSync(publicDir, { recursive: true });
+
+    const files = fs.readdirSync(postDir);
+
+    for (const file of files) {
+      const srcPath = path.join(postDir, file);
+      const fileStats = fs.statSync(srcPath);
+
+      if (!fileStats.isFile()) {
+        continue;
+      }
+
+      const ext = path.extname(file).toLowerCase();
+
+      if (!IMAGE_EXTENSIONS.has(ext)) {
+        continue;
+      }
+
+      const destPath = path.join(publicDir, file);
+      fs.copyFileSync(srcPath, destPath);
     }
 
-    const destPath = path.join(publicDir, file);
-    fs.copyFileSync(srcPath, destPath);
+    console.log(`Synced images for blog post: ${slug}`);
   }
-
-  console.log(`Synced images for blog post: ${slug}`);
 }
 
 // Remove orphaned image directories in public/images/blog (no matching post directory)

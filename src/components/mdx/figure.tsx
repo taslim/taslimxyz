@@ -14,7 +14,7 @@ export interface FigureProps {
 function parseMarkdownLinks(text: string): React.ReactNode {
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
-  
+
   // Regex to match markdown links: [text](url)
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
   let match: RegExpExecArray | null;
@@ -36,7 +36,7 @@ function parseMarkdownLinks(text: string): React.ReactNode {
         rel="noopener noreferrer"
       >
         {linkText}
-      </a>
+      </a>,
     );
 
     lastIndex = match.index + match[0].length;

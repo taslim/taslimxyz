@@ -18,7 +18,7 @@ pnpm new              # Create a new draft
 pnpm publish:drafts   # Publish selected drafts
 ```
 
-See [`src/content/blog/drafts/README.md`](src/content/blog/drafts/README.md) for workflow documentation.
+See [`src/content/drafts/README.md`](src/content/drafts/README.md) for workflow documentation.
 
 ## Tech Stack
 

@@ -54,27 +54,33 @@ if (!slug) {
 }
 
 // Check for duplicates in both drafts and published posts
-const draftsDir = path.join(
-  __dirname,
-  "..",
-  "src",
-  "content",
-  "blog",
-  "drafts",
-);
+const draftsDir = path.join(__dirname, "..", "src", "content", "drafts");
 const publishedDir = path.join(__dirname, "..", "src", "content", "blog");
 
 const draftDirPath = path.join(draftsDir, slug);
-const publishedDirPath = path.join(publishedDir, slug);
 
 if (fs.existsSync(draftDirPath)) {
   console.error(`Error: Draft already exists: ${draftDirPath}`);
   process.exit(1);
 }
 
-if (fs.existsSync(publishedDirPath)) {
-  console.error(`Error: Published post already exists: ${publishedDirPath}`);
-  process.exit(1);
+// Check for duplicates across all year directories in published posts
+if (fs.existsSync(publishedDir)) {
+  const yearDirs = fs.readdirSync(publishedDir).filter((item) => {
+    const itemPath = path.join(publishedDir, item);
+    const stats = fs.statSync(itemPath);
+    return stats.isDirectory() && /^\d{4}$/.test(item);
+  });
+
+  for (const year of yearDirs) {
+    const publishedDirPath = path.join(publishedDir, year, slug);
+    if (fs.existsSync(publishedDirPath)) {
+      console.error(
+        `Error: Published post already exists: ${publishedDirPath}`,
+      );
+      process.exit(1);
+    }
+  }
 }
 
 // Ensure drafts directory exists
@@ -94,16 +100,13 @@ const tagsArray = tags
 // Build frontmatter object
 const frontmatterData: {
   title: string;
-  summary?: string;
+  summary: string;
   tags: string[];
 } = {
   title,
+  summary: summary.trim() || "",
   tags: tagsArray,
 };
-
-if (summary.trim()) {
-  frontmatterData.summary = summary;
-}
 
 // Safely generate frontmatter with gray-matter
 const content = matter.stringify("", frontmatterData);

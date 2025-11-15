@@ -1,10 +1,17 @@
 import { compileMDX } from "next-mdx-remote/rsc";
 import { getBlogPosts, getPost } from "@/lib/blog";
 import { format } from "date-fns";
-import { Figure, type FigureProps, Callout, Tweet } from "@/components/mdx";
+import {
+  Figure,
+  type FigureProps,
+  Callout,
+  Tweet,
+  Credits,
+} from "@/components/mdx";
 import rehypePrettyCode from "rehype-pretty-code";
 import { type Metadata } from "next";
 import { type Element } from "hast";
+import { notFound } from "next/navigation";
 
 // Generate static params for all blog posts
 export async function generateStaticParams() {
@@ -22,6 +29,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const post = getPost(slug);
+
+  if (!post) {
+    notFound();
+  }
 
   return {
     title: `${post.title}`,
@@ -43,6 +54,10 @@ export default async function BlogPostPage({
 }) {
   const { slug } = await params;
   const post = getPost(slug);
+
+  if (!post) {
+    notFound();
+  }
 
   const FigureWithBasePath = (props: FigureProps) => {
     const { src } = props;
@@ -98,11 +113,16 @@ export default async function BlogPostPage({
       Figure: FigureWithBasePath,
       Callout,
       Tweet,
+      Credits,
     },
   });
 
   // Format the date - parse components to avoid timezone issues
-  const [year, month, day] = post.publishedAt.split('-').map(Number) as [number, number, number];
+  const [year, month, day] = post.publishedAt.split("-").map(Number) as [
+    number,
+    number,
+    number,
+  ];
   const formattedDate = format(new Date(year, month - 1, day), "MMMM d, yyyy");
 
   return (
