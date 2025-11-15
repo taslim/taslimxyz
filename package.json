@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "next build",
+    "build": "tsx scripts/sync-blog-images.ts && next build",
     "check": "eslint . && tsc --noEmit && prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "dev": "next dev --turbo",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "new": "tsx scripts/new-blog-draft.ts",
+    "sync:blog-images": "tsx scripts/sync-blog-images.ts",
     "preview": "next build && next start",
     "publish:drafts": "tsx scripts/publish-blog-drafts.ts",
     "start": "next start",

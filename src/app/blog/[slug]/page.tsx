@@ -1,7 +1,7 @@
 import { compileMDX } from "next-mdx-remote/rsc";
 import { getBlogPosts, getPost } from "@/lib/blog";
 import { format } from "date-fns";
-import { Figure, Callout, Tweet } from "@/components/mdx";
+import { Figure, type FigureProps, Callout, Tweet } from "@/components/mdx";
 import rehypePrettyCode from "rehype-pretty-code";
 import { type Metadata } from "next";
 import { type Element } from "hast";
@@ -44,6 +44,30 @@ export default async function BlogPostPage({
   const { slug } = await params;
   const post = getPost(slug);
 
+  const FigureWithBasePath = (props: FigureProps) => {
+    const { src } = props;
+
+    if (typeof src !== "string") {
+      return <Figure {...props} />;
+    }
+
+    const trimmed = src.trim();
+    const isAbsoluteUrl = /^https?:\/\//.test(trimmed);
+    const isRootRelative = trimmed.startsWith("/");
+
+    if (isAbsoluteUrl || isRootRelative) {
+      return <Figure {...props} src={src} />;
+    }
+
+    const basePath = `/images/blog/${slug}`;
+    const normalizedBase = basePath.endsWith("/")
+      ? basePath.slice(0, -1)
+      : basePath;
+    const resolvedSrc = `${normalizedBase}/${trimmed}`;
+
+    return <Figure {...props} src={resolvedSrc} />;
+  };
+
   // Compile MDX content with syntax highlighting
   const { content } = await compileMDX({
     source: post.content,
@@ -71,7 +95,7 @@ export default async function BlogPostPage({
       },
     },
     components: {
-      Figure,
+      Figure: FigureWithBasePath,
       Callout,
       Tweet,
     },

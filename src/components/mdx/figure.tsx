@@ -1,6 +1,6 @@
 import Image, { type StaticImageData } from "next/image";
 
-interface FigureProps {
+export interface FigureProps {
   src: string | StaticImageData;
   alt: string;
   caption?: string;
@@ -9,8 +9,8 @@ interface FigureProps {
 }
 
 export function Figure({ src, alt, caption, width, height }: FigureProps) {
-  // If src is a StaticImageData (imported image), Next.js handles dimensions automatically
-  // If src is a string, we need explicit width/height (default to 800x600 for backwards compat)
+  // If src is a StaticImageData (imported image), Next.js handles dimensions automatically.
+  // If it's a string, we need explicit width/height (default to 800x600 for backwards compat).
   const isStaticImage = typeof src !== "string";
 
   return (
