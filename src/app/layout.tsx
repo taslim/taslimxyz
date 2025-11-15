@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
 
+import { Suspense } from "react";
 import { type Metadata } from "next";
 import {
   Geist,
@@ -110,7 +111,9 @@ export default function RootLayout({
         </ThemeProvider>
         {gaMeasurementId ? (
           <>
-            <AnalyticsClient />
+            <Suspense fallback={null}>
+              <AnalyticsClient />
+            </Suspense>
             <WebVitalsReporter />
             <GoogleAnalytics gaId={gaMeasurementId} />
           </>
