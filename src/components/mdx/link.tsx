@@ -12,12 +12,7 @@ export function Link(props: AnchorHTMLAttributes<HTMLAnchorElement>) {
 
   if (isExternal) {
     return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        {...rest}
-      >
+      <a href={href} target="_blank" rel="noopener noreferrer" {...rest}>
         {children}
       </a>
     );
@@ -30,4 +25,3 @@ export function Link(props: AnchorHTMLAttributes<HTMLAnchorElement>) {
     </a>
   );
 }
-

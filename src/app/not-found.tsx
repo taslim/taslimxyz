@@ -10,11 +10,10 @@ export default function NotFound() {
   return (
     <div className="page-shell page-shell--home">
       <h1 className="page-title page-title--home">404</h1>
-      <p className="page-subtitle">This page doesn't exist</p>
+      <p className="page-subtitle">This page doesn&apos;t exist</p>
       <p>
         <Link href="/">← Back to home</Link>
       </p>
     </div>
   );
 }
-

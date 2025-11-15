@@ -9,13 +9,16 @@ function parseMarkdownLink(children: React.ReactNode): {
   text: string;
   url: string;
 } | null {
-  // Convert children to string
-  const childString = String(children);
+  // Only parse if children is a string
+  if (typeof children !== "string") {
+    return null;
+  }
 
   // Match markdown link pattern: [text](url)
-  const linkMatch = childString.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+  const linkRegex = /^\[([^\]]+)\]\(([^)]+)\)$/;
+  const linkMatch = linkRegex.exec(children);
 
-  if (linkMatch && linkMatch[1] && linkMatch[2]) {
+  if (linkMatch?.[1] && linkMatch?.[2]) {
     return {
       text: linkMatch[1],
       url: linkMatch[2],
@@ -47,4 +50,3 @@ export function Comment({ children }: CommentProps) {
     </p>
   );
 }
-
