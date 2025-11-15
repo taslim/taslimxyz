@@ -1,11 +1,11 @@
-import nextConfig from "eslint-config-next/core-web-vitals";
+import nextVitals from "eslint-config-next/core-web-vitals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
     ignores: [".next", "legacy", "next-env.d.ts"],
   },
-  ...nextConfig,
+  ...nextVitals,
   ...tseslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
