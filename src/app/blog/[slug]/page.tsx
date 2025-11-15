@@ -7,6 +7,8 @@ import {
   Callout,
   Tweet,
   Credits,
+  Link,
+  Comment,
 } from "@/components/mdx";
 import rehypePrettyCode from "rehype-pretty-code";
 import { type Metadata } from "next";
@@ -114,6 +116,8 @@ export default async function BlogPostPage({
       Callout,
       Tweet,
       Credits,
+      Comment,
+      a: Link,
     },
   });
 

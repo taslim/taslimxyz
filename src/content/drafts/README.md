@@ -16,7 +16,7 @@ Work-in-progress blog posts. Files here are git-ignored and won't appear in the 
    />
    ```
 5. **Add summary**: Ensure `summary` field is filled (required for publishing)
-6. **Publish**: `pnpm publish:drafts` (moves entire folder to `blog/`)
+6. **Publish**: `pnpm publish:drafts` (moves entire folder to `blog/{year}/{slug}/`)
 
 ## Notes
 
@@ -25,6 +25,6 @@ Work-in-progress blog posts. Files here are git-ignored and won't appear in the 
 - Republishing preserves original `publishedAt` and adds `updatedAt`
 - Posts sorted by `publishedAt` (newest first)
 - `sample-post.example` shows all the supported MDX components
-- Images are mirrored from `src/content/blog/<slug>/` to `public/images/blog/<slug>/`
+- Images are mirrored from `src/content/blog/{year}/<slug>/` to `public/images/blog/<slug>/`
   by `pnpm sync:blog-images` (automatically run before `pnpm build`)
 

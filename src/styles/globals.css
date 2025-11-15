@@ -694,6 +694,17 @@ hr {
   color: var(--color-dark-text-secondary);
 }
 
+/* Blog comment links (e.g., Hacker News, discussions) */
+.blog-comment {
+  text-align: center;
+  margin-top: 2rem;
+  margin-bottom: 0;
+}
+
+.blog-comment a {
+  font-weight: 600;
+}
+
 /* Blog callouts */
 .blog-callout {
   font-family: var(--blog-body-font-family);
