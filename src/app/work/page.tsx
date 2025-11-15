@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -73,13 +72,13 @@ export default function WorkPage() {
               the Federal University of Technology, Akure.
             </p>
             <p>
-              <Link
+              <a
                 href="https://linkedin.com/in/taslimokunola"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Learn more about my work
-              </Link>
+              </a>
               <br />
               Reach out: hello@taslim.xyz
             </p>
