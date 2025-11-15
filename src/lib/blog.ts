@@ -27,43 +27,52 @@ export function getBlogPosts(): BlogPost[] {
     return [];
   }
 
-  const files = fs
-    .readdirSync(postsDir)
-    .filter((f) => f.endsWith(".mdx"))
-    .filter((f) => {
-      // Ensure only regular files are included (not directories like drafts/)
-      // Note: readdirSync is non-recursive, so subdirectory contents are not listed
-      const filePath = path.join(postsDir, f);
-      const stats = fs.statSync(filePath);
-      return stats.isFile();
+  const items = fs.readdirSync(postsDir).filter((item) => {
+    const itemPath = path.join(postsDir, item);
+    const stats = fs.statSync(itemPath);
+    // Only include directories, exclude 'drafts' directory
+    return stats.isDirectory() && item !== "drafts";
+  });
+
+  const posts: BlogPost[] = [];
+
+  for (const slug of items) {
+    const mdxPath = path.join(postsDir, slug, "index.mdx");
+
+    // Skip if index.mdx doesn't exist
+    if (!fs.existsSync(mdxPath)) {
+      continue;
+    }
+
+    const fileContents = fs.readFileSync(mdxPath, "utf8");
+    const { data } = matter(fileContents);
+
+    posts.push({
+      slug,
+      title: data.title as string,
+      publishedAt: data.publishedAt as string,
+      updatedAt: data.updatedAt as string | undefined,
+      summary: data.summary as string,
+      tags: (data.tags as string[]) || [],
     });
+  }
 
-  return files
-    .map((filename) => {
-      const filePath = path.join(postsDir, filename);
-      const fileContents = fs.readFileSync(filePath, "utf8");
-      const { data } = matter(fileContents);
-
-      return {
-        slug: filename.replace(".mdx", ""),
-        title: data.title as string,
-        publishedAt: data.publishedAt as string,
-        updatedAt: data.updatedAt as string | undefined,
-        summary: data.summary as string,
-        tags: (data.tags as string[]) || [],
-      };
-    })
-    .sort(
-      (a, b) =>
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
-    );
+  return posts.sort(
+    (a, b) =>
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+  );
 }
 
 /**
  * Get a single blog post with its content
  */
 export function getPost(slug: string): BlogPostWithContent {
-  const filePath = path.join(process.cwd(), "src/content/blog", `${slug}.mdx`);
+  const filePath = path.join(
+    process.cwd(),
+    "src/content/blog",
+    slug,
+    "index.mdx",
+  );
   const fileContents = fs.readFileSync(filePath, "utf8");
   const { data, content } = matter(fileContents);
 

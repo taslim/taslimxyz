@@ -53,4 +53,7 @@ legacy
 .cursor/
 
 # blog drafts (work in progress, not published yet)
-src/content/blog/drafts/*.mdx
+src/content/blog/drafts/**
+!src/content/blog/drafts/
+!src/content/blog/drafts/README.md
+!src/content/blog/drafts/sample-post.example

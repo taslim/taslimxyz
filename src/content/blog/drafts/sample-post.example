@@ -54,10 +54,24 @@ const response = await assistant.complete({
 });
 ```
 
+For images colocated with your post, import them first:
+
+```mdx
+import workflow from "./ai-copilot-workflow.jpg";
+
 <Figure
-  src="/images/blog/ai-copilot-workflow.jpg"
+  src={workflow}
   alt="AI Copilot Workflow Diagram"
   caption="How AI copilots integrate into modern development workflows"
+/>
+```
+
+For shared images in public/, use string paths:
+
+<Figure
+  src="/images/shared/example.jpg"
+  alt="Shared image example"
+  caption="This uses a path to public/images/shared/"
 />
 
 ## Looking Ahead

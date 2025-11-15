@@ -53,8 +53,6 @@ if (!slug) {
   );
 }
 
-const filename = `${slug}.mdx`;
-
 // Check for duplicates in both drafts and published posts
 const draftsDir = path.join(
   __dirname,
@@ -66,16 +64,16 @@ const draftsDir = path.join(
 );
 const publishedDir = path.join(__dirname, "..", "src", "content", "blog");
 
-const draftPath = path.join(draftsDir, filename);
-const publishedPath = path.join(publishedDir, filename);
+const draftDirPath = path.join(draftsDir, slug);
+const publishedDirPath = path.join(publishedDir, slug);
 
-if (fs.existsSync(draftPath)) {
-  console.error(`Error: Draft already exists: ${draftPath}`);
+if (fs.existsSync(draftDirPath)) {
+  console.error(`Error: Draft already exists: ${draftDirPath}`);
   process.exit(1);
 }
 
-if (fs.existsSync(publishedPath)) {
-  console.error(`Error: Published post already exists: ${publishedPath}`);
+if (fs.existsSync(publishedDirPath)) {
+  console.error(`Error: Published post already exists: ${publishedDirPath}`);
   process.exit(1);
 }
 
@@ -83,6 +81,9 @@ if (fs.existsSync(publishedPath)) {
 if (!fs.existsSync(draftsDir)) {
   fs.mkdirSync(draftsDir, { recursive: true });
 }
+
+// Create the draft post directory
+fs.mkdirSync(draftDirPath, { recursive: true });
 
 // Parse tags
 const tagsArray = tags
@@ -107,11 +108,13 @@ if (summary.trim()) {
 // Safely generate frontmatter with gray-matter
 const content = matter.stringify("", frontmatterData);
 
-// Write the draft file
-fs.writeFileSync(draftPath, content, "utf8");
+// Write the draft file (index.mdx inside the directory)
+const draftFilePath = path.join(draftDirPath, "index.mdx");
+fs.writeFileSync(draftFilePath, content, "utf8");
 
-console.log(`\n✅ Created draft: ${draftPath}`);
+console.log(`\n✅ Created draft: ${draftFilePath}`);
 console.log(`\nNext steps:`);
 console.log(`1. Edit the file and add your blog content`);
-console.log(`2. Run 'pnpm publish:drafts' when ready to publish`);
-console.log(`3. Select the draft from the interactive list\n`);
+console.log(`2. Add images to the same directory if needed`);
+console.log(`3. Run 'pnpm publish:drafts' when ready to publish`);
+console.log(`4. Select the draft from the interactive list\n`);

@@ -31,32 +31,44 @@ if (!fs.existsSync(draftsDir)) {
   process.exit(0);
 }
 
-// Read all draft files
-const draftFiles = fs
-  .readdirSync(draftsDir)
-  .filter((file) => file.endsWith(".mdx") && file !== ".gitkeep");
+// Read all draft directories (exclude files like README.md and sample-post.example)
+const draftDirs = fs.readdirSync(draftsDir).filter((item) => {
+  const itemPath = path.join(draftsDir, item);
+  const stats = fs.statSync(itemPath);
+  return stats.isDirectory();
+});
 
-if (draftFiles.length === 0) {
-  console.log("No draft files found.");
+if (draftDirs.length === 0) {
+  console.log("No draft directories found.");
   process.exit(0);
 }
 
 // Parse all drafts and collect metadata
 const drafts: Array<{
-  filename: string;
+  slug: string;
   frontmatter: DraftFrontmatter;
-  fullPath: string;
+  dirPath: string;
+  mdxPath: string;
 }> = [];
 
-for (const filename of draftFiles) {
-  const filepath = path.join(draftsDir, filename);
-  const fileContents = fs.readFileSync(filepath, "utf-8");
+for (const slug of draftDirs) {
+  const dirPath = path.join(draftsDir, slug);
+  const mdxPath = path.join(dirPath, "index.mdx");
+
+  // Check if index.mdx exists
+  if (!fs.existsSync(mdxPath)) {
+    console.warn(`⚠️  Skipping ${slug}: missing index.mdx`);
+    continue;
+  }
+
+  const fileContents = fs.readFileSync(mdxPath, "utf-8");
   const { data } = matter(fileContents);
 
   drafts.push({
-    filename,
+    slug,
     frontmatter: data as DraftFrontmatter,
-    fullPath: filepath,
+    dirPath,
+    mdxPath,
   });
 }
 
@@ -64,9 +76,9 @@ for (const filename of draftFiles) {
 console.log(`\nFound ${drafts.length} draft(s):\n`);
 
 const choices = drafts.map((draft) => ({
-  name: draft.filename,
-  message: `${draft.filename} — "${draft.frontmatter.title}"`,
-  value: draft.filename,
+  name: draft.slug,
+  message: `${draft.slug} — "${draft.frontmatter.title}"`,
+  value: draft.slug,
 }));
 
 const { selected } = await enquirer.prompt<{ selected: string[] }>({
@@ -92,42 +104,40 @@ console.log(`\nPublishing ${selected.length} draft(s):\n`);
 let published = 0;
 let errors = 0;
 
-for (const filename of selected) {
-  const draft = drafts.find((d) => d.filename === filename);
+for (const slug of selected) {
+  const draft = drafts.find((d) => d.slug === slug);
   if (!draft) continue;
 
-  const { frontmatter, fullPath } = draft;
+  const { frontmatter, dirPath, mdxPath } = draft;
 
   // Validate required fields
   if (!frontmatter.title) {
-    console.error(`❌ ${filename}: Missing required field "title". Skipping.`);
+    console.error(`❌ ${slug}: Missing required field "title". Skipping.`);
     errors++;
     continue;
   }
 
   if (!frontmatter.summary) {
-    console.error(
-      `❌ ${filename}: Missing required field "summary". Skipping.`,
-    );
+    console.error(`❌ ${slug}: Missing required field "summary". Skipping.`);
     errors++;
     continue;
   }
 
-  const targetPath = path.join(publishedDir, filename);
+  const targetDirPath = path.join(publishedDir, slug);
 
-  // Check if file already exists in target
-  if (fs.existsSync(targetPath)) {
-    console.error(`❌ ${filename}: Already exists in blog/. Skipping.`);
+  // Check if directory already exists in target
+  if (fs.existsSync(targetDirPath)) {
+    console.error(`❌ ${slug}: Already exists in blog/. Skipping.`);
     errors++;
     continue;
   }
 
-  // Track temp file for cleanup on error
-  let tempFilePath: string | null = null;
+  // Track temp directory for cleanup on error
+  let tempDirPath: string | null = null;
 
   try {
-    // Read file and add publishedAt timestamp
-    const fileContents = fs.readFileSync(fullPath, "utf-8");
+    // Read MDX file and add publishedAt timestamp
+    const fileContents = fs.readFileSync(mdxPath, "utf-8");
     const parsed = matter(fileContents);
 
     const now = new Date().toISOString();
@@ -161,34 +171,49 @@ for (const filename of selected) {
       }
     }
 
-    // Atomically write to target using temp file + rename pattern
-    const updatedContent = matter.stringify(parsed.content, orderedData);
-    tempFilePath = `${targetPath}.tmp.${Date.now()}`;
-    fs.writeFileSync(tempFilePath, updatedContent, "utf-8");
+    // Create a temp directory and copy all files
+    tempDirPath = `${targetDirPath}.tmp.${Date.now()}`;
+    fs.mkdirSync(tempDirPath, { recursive: true });
+
+    // Copy all files from draft directory to temp directory
+    const files = fs.readdirSync(dirPath);
+    for (const file of files) {
+      const srcPath = path.join(dirPath, file);
+      const destPath = path.join(tempDirPath, file);
+
+      // For index.mdx, write the updated content with new frontmatter
+      if (file === "index.mdx") {
+        const updatedContent = matter.stringify(parsed.content, orderedData);
+        fs.writeFileSync(destPath, updatedContent, "utf-8");
+      } else {
+        // Copy other files (images, etc.) as-is
+        fs.copyFileSync(srcPath, destPath);
+      }
+    }
 
     // Atomic rename - either succeeds completely or fails with no partial state
-    fs.renameSync(tempFilePath, targetPath);
-    tempFilePath = null; // Successfully renamed, no cleanup needed
+    fs.renameSync(tempDirPath, targetDirPath);
+    tempDirPath = null; // Successfully renamed, no cleanup needed
 
-    // Only remove draft after successful publish
-    fs.unlinkSync(fullPath);
+    // Only remove draft directory after successful publish
+    fs.rmSync(dirPath, { recursive: true, force: true });
 
     if (orderedData.updatedAt) {
-      console.log(`✅ ${filename} → blog/ (updated)`);
+      console.log(`✅ ${slug} → blog/ (updated)`);
       console.log(
         `   Originally published: ${orderedData.publishedAt as string}`,
       );
       console.log(`   Updated at: ${orderedData.updatedAt as string}`);
     } else {
-      console.log(`✅ ${filename} → blog/`);
+      console.log(`✅ ${slug} → blog/`);
       console.log(`   Published at: ${orderedData.publishedAt as string}`);
     }
     published++;
   } catch (error) {
-    // Clean up temp file if it exists
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
+    // Clean up temp directory if it exists
+    if (tempDirPath && fs.existsSync(tempDirPath)) {
       try {
-        fs.unlinkSync(tempFilePath);
+        fs.rmSync(tempDirPath, { recursive: true, force: true });
       } catch (cleanupError) {
         // Log cleanup failure but don't mask the original error
         const cleanupMessage =
@@ -196,14 +221,14 @@ for (const filename of selected) {
             ? cleanupError.message
             : "Unknown error";
         console.error(
-          `   Warning: Failed to clean up temp file ${tempFilePath}: ${cleanupMessage}`,
+          `   Warning: Failed to clean up temp directory ${tempDirPath}: ${cleanupMessage}`,
         );
       }
     }
 
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    console.error(`❌ ${filename}: Failed to publish - ${errorMessage}`);
+    console.error(`❌ ${slug}: Failed to publish - ${errorMessage}`);
     errors++;
   }
 }
