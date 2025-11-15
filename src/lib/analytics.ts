@@ -4,6 +4,8 @@ const measurementId = env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const hasMeasurementId =
   typeof measurementId === "string" && measurementId.length > 0;
 
+const isInternalTraffic = process.env.NODE_ENV !== "production";
+
 type EventParams = Record<string, string | number | boolean | null | undefined>;
 
 export type PageviewParams = {
@@ -20,6 +22,9 @@ const getGtag = () => {
   return typeof window.gtag === "function" ? window.gtag : undefined;
 };
 
+const withTrafficType = <T extends Record<string, unknown>>(params: T) =>
+  isInternalTraffic ? { ...params, traffic_type: "internal" } : params;
+
 export const trackPageview = (params: PageviewParams) => {
   if (!hasMeasurementId) {
     return;
@@ -31,10 +36,14 @@ export const trackPageview = (params: PageviewParams) => {
     return;
   }
 
-  gtag("event", "page_view", {
-    send_to: measurementId,
-    ...params,
-  });
+  gtag(
+    "event",
+    "page_view",
+    withTrafficType({
+      send_to: measurementId,
+      ...params,
+    }),
+  );
 };
 
 export const trackEvent = (eventName: string, params?: EventParams): void => {
@@ -48,10 +57,14 @@ export const trackEvent = (eventName: string, params?: EventParams): void => {
     return;
   }
 
-  gtag("event", eventName, {
-    send_to: measurementId,
-    ...params,
-  });
+  gtag(
+    "event",
+    eventName,
+    withTrafficType({
+      send_to: measurementId,
+      ...params,
+    }),
+  );
 };
 
 export const analytics = {
