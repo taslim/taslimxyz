@@ -26,7 +26,7 @@ Google Analytics 4 is integrated using Next.js' official `@next/third-parties/go
 
 - **Initial pageview:** The `GoogleAnalytics` component in `src/app/layout.tsx` handles the first page load.
 - **SPA navigation:** `AnalyticsClient` (`src/components/analytics-client.tsx`) tracks subsequent client-side route changes via `page_view` events.
-- **Web Vitals:** `WebVitalsReporter` (`src/components/web-vitals-reporter.tsx`) forwards Core Web Vitals (LCP, FID, CLS, INP, TTFB) to GA4 via `useReportWebVitals`.
+- **Web Vitals:** `WebVitalsReporter` (`src/components/web-vitals-reporter.tsx`) forwards Core Web Vitals (CLS, FCP, INP, LCP, TTFB) to GA4 via `useReportWebVitals`.
 - **Internal traffic tagging:** All events in non-production environments automatically include `traffic_type: "internal"` to help filter dev/preview traffic in GA4.
 - **Custom events:** Use `trackEvent("event_name", { ...params })` from `src/lib/analytics.ts` for future interactions; it automatically no-ops when analytics is disabled or `window.gtag` is unavailable.
 
