@@ -10,15 +10,21 @@ export interface CommentProps {
  */
 function parseMarkdownLink(text: string): { text: string; url: string } | null {
   const linkRegex = /^\[([^\]]+)\]\(([^)]+)\)$/;
-  const linkMatch = linkRegex.exec(text.trim());
+  const match = linkRegex.exec(text.trim());
 
-  if (!linkMatch?.[1] || !linkMatch[2]) {
+  if (!match) {
+    return null;
+  }
+
+  const [, linkText, linkUrl] = match;
+
+  if (!linkText || !linkUrl) {
     return null;
   }
 
   return {
-    text: linkMatch[1],
-    url: linkMatch[2],
+    text: linkText,
+    url: linkUrl,
   };
 }
 
