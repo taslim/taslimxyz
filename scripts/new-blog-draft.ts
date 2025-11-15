@@ -11,8 +11,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Interactive prompts
 const answers = await enquirer.prompt<{
   title: string;
-  summary: string;
-  tags: string;
 }>([
   {
     type: "input",
@@ -20,21 +18,9 @@ const answers = await enquirer.prompt<{
     message: "Post title:",
     validate: (input: string) => (input.trim() ? true : "Title is required"),
   },
-  {
-    type: "input",
-    name: "summary",
-    message: "Summary (optional):",
-    initial: "",
-  },
-  {
-    type: "input",
-    name: "tags",
-    message: "Tags (comma-separated, optional):",
-    initial: "",
-  },
 ]);
 
-const { title, summary, tags } = answers;
+const { title } = answers;
 
 // Generate slug from title (kebab-case)
 let slug = title
@@ -91,21 +77,17 @@ if (!fs.existsSync(draftsDir)) {
 // Create the draft post directory
 fs.mkdirSync(draftDirPath, { recursive: true });
 
-// Parse tags
-const tagsArray = tags
-  .split(",")
-  .map((tag) => tag.trim())
-  .filter((tag) => tag.length > 0);
-
 // Build frontmatter object
 const frontmatterData: {
   title: string;
   summary: string;
+  image: string;
   tags: string[];
 } = {
   title,
-  summary: summary.trim() || "",
-  tags: tagsArray,
+  summary: "",
+  image: "",
+  tags: [],
 };
 
 // Safely generate frontmatter with gray-matter

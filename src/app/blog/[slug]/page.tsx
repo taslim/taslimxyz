@@ -24,6 +24,20 @@ export async function generateStaticParams() {
   }));
 }
 
+// Resolve image path for blog post
+function resolveImagePath(src: string, slug: string): string {
+  const trimmed = src.trim();
+  const isRootRelative = trimmed.startsWith("/");
+
+  // If it's already root-relative, use it as-is
+  if (isRootRelative) {
+    return trimmed;
+  }
+
+  // Otherwise, resolve relative path to blog post folder
+  return `/images/blog/${slug}/${trimmed}`;
+}
+
 // Extract first image from MDX content
 function extractFirstImage(content: string, slug: string): string | null {
   // Match <Figure src="..." or <Figure\n  src="..."
@@ -34,16 +48,7 @@ function extractFirstImage(content: string, slug: string): string | null {
     return null;
   }
 
-  const src = match[1].trim();
-  const isRootRelative = src.startsWith("/");
-
-  // If it's already root-relative, use it as-is
-  if (isRootRelative) {
-    return src;
-  }
-
-  // Otherwise, resolve relative path
-  return `/images/blog/${slug}/${src}`;
+  return resolveImagePath(match[1], slug);
 }
 
 // Generate metadata for each blog post
@@ -59,9 +64,13 @@ export async function generateMetadata({
     notFound();
   }
 
-  // Extract first image from blog post content
-  const firstImage = extractFirstImage(post.content, slug);
-  const ogImage = firstImage ?? "/og-blog.png";
+  // Determine OG image with priority:
+  // 1. Frontmatter image (manual override)
+  // 2. First Figure in content (auto-detected)
+  // 3. Default blog OG image (fallback)
+  const ogImage = post.image
+    ? resolveImagePath(post.image, slug)
+    : extractFirstImage(post.content, slug) ?? "/og-blog.png";
 
   return {
     title: `${post.title}`,

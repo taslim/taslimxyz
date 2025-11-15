@@ -56,7 +56,7 @@ legacy
 public/images/blog/
 
 # blog drafts (work in progress, not published yet)
-src/content/blog/drafts/**
-!src/content/blog/drafts/
-!src/content/blog/drafts/README.md
-!src/content/blog/drafts/sample-post.example
+src/content/drafts/**
+!src/content/drafts/
+!src/content/drafts/README.md
+!src/content/drafts/sample-post.example

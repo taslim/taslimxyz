@@ -12,6 +12,7 @@ interface DraftFrontmatter {
   title: string;
   publishedAt?: string;
   summary?: string;
+  image?: string;
   tags?: string[];
 }
 
@@ -163,6 +164,10 @@ for (const slug of selected) {
 
     orderedData.summary = parsed.data.summary;
 
+    if (parsed.data.image) {
+      orderedData.image = parsed.data.image;
+    }
+
     if (parsed.data.tags) {
       orderedData.tags = parsed.data.tags;
     }
@@ -170,7 +175,7 @@ for (const slug of selected) {
     // Add any other fields that might exist (except the ones we've already handled)
     for (const [key, value] of Object.entries(parsed.data)) {
       if (
-        !["title", "publishedAt", "updatedAt", "summary", "tags"].includes(key)
+        !["title", "publishedAt", "updatedAt", "summary", "image", "tags"].includes(key)
       ) {
         orderedData[key] = value;
       }

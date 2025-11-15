@@ -8,6 +8,7 @@ export interface BlogPost {
   publishedAt: string;
   updatedAt?: string;
   summary: string;
+  image?: string;
   tags?: string[];
 }
 
@@ -63,6 +64,7 @@ export function getBlogPosts(): BlogPost[] {
         publishedAt: data.publishedAt as string,
         updatedAt: data.updatedAt as string | undefined,
         summary: data.summary as string,
+        image: data.image as string | undefined,
         tags: (data.tags as string[]) || [],
       });
     }
@@ -105,6 +107,7 @@ export function getPost(slug: string): BlogPostWithContent | null {
         publishedAt: data.publishedAt as string,
         updatedAt: data.updatedAt as string | undefined,
         summary: data.summary as string,
+        image: data.image as string | undefined,
         tags: (data.tags as string[]) || [],
         content,
       };
