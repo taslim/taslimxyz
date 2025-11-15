@@ -54,26 +54,11 @@ const response = await assistant.complete({
 });
 ```
 
-For images colocated with your post in `src/content/blog/<slug>/`, reference the
-mirrored public path:
-
-```mdx
-<Figure
-  src="/images/blog/sample-post/ai-copilot-workflow.jpg"
-  alt="AI Copilot Workflow Diagram"
-  caption="How AI copilots integrate into modern development workflows"
-/>
-```
-
-For shared images in `public/`, use string paths:
-
-```mdx
 <Figure
   src="/images/shared/example.jpg"
   alt="Shared image example"
   caption="This uses a path to public/images/shared/"
 />
-```
 
 ## Looking Ahead
 

@@ -14,7 +14,7 @@
     "new": "tsx scripts/new-blog-draft.ts",
     "sync:blog-images": "tsx scripts/sync-blog-images.ts",
     "preview": "next build && next start",
-    "publish:drafts": "tsx scripts/publish-blog-drafts.ts",
+    "publish:drafts": "tsx scripts/publish-blog-drafts.ts && tsx scripts/sync-blog-images.ts",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
