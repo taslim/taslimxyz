@@ -24,6 +24,28 @@ export async function generateStaticParams() {
   }));
 }
 
+// Extract first image from MDX content
+function extractFirstImage(content: string, slug: string): string | null {
+  // Match <Figure src="..." or <Figure\n  src="..."
+  const figureRegex = /<Figure[^>]*\ssrc=["']([^"']+)["']/i;
+  const match = figureRegex.exec(content);
+
+  if (!match?.[1]) {
+    return null;
+  }
+
+  const src = match[1].trim();
+  const isRootRelative = src.startsWith("/");
+
+  // If it's already root-relative, use it as-is
+  if (isRootRelative) {
+    return src;
+  }
+
+  // Otherwise, resolve relative path
+  return `/images/blog/${slug}/${src}`;
+}
+
 // Generate metadata for each blog post
 export async function generateMetadata({
   params,
@@ -37,6 +59,10 @@ export async function generateMetadata({
     notFound();
   }
 
+  // Extract first image from blog post content
+  const firstImage = extractFirstImage(post.content, slug);
+  const ogImage = firstImage ?? "/og-blog.png";
+
   return {
     title: `${post.title}`,
     description: post.summary,
@@ -46,6 +72,14 @@ export async function generateMetadata({
       type: "article",
       publishedTime: post.publishedAt,
       authors: ["Taslim Okunola"],
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
     },
   };
 }
