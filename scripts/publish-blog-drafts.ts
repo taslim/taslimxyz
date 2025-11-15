@@ -122,6 +122,9 @@ for (const filename of selected) {
     continue;
   }
 
+  // Track temp file for cleanup on error
+  let tempFilePath: string | null = null;
+
   try {
     // Read file and add publishedAt timestamp
     const fileContents = fs.readFileSync(fullPath, "utf-8");
@@ -158,11 +161,16 @@ for (const filename of selected) {
       }
     }
 
-    // Write updated content to target
+    // Atomically write to target using temp file + rename pattern
     const updatedContent = matter.stringify(parsed.content, orderedData);
-    fs.writeFileSync(targetPath, updatedContent, "utf-8");
+    tempFilePath = `${targetPath}.tmp.${Date.now()}`;
+    fs.writeFileSync(tempFilePath, updatedContent, "utf-8");
 
-    // Remove from drafts
+    // Atomic rename - either succeeds completely or fails with no partial state
+    fs.renameSync(tempFilePath, targetPath);
+    tempFilePath = null; // Successfully renamed, no cleanup needed
+
+    // Only remove draft after successful publish
     fs.unlinkSync(fullPath);
 
     if (orderedData.updatedAt) {
@@ -177,6 +185,18 @@ for (const filename of selected) {
     }
     published++;
   } catch (error) {
+    // Clean up temp file if it exists
+    if (tempFilePath && fs.existsSync(tempFilePath)) {
+      try {
+        fs.unlinkSync(tempFilePath);
+      } catch (cleanupError) {
+        // Log cleanup failure but don't mask the original error
+        console.error(
+          `   Warning: Failed to clean up temp file ${tempFilePath}`,
+        );
+      }
+    }
+
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     console.error(`❌ ${filename}: Failed to publish - ${errorMessage}`);

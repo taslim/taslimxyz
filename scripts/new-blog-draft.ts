@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import enquirer from "enquirer";
+import matter from "gray-matter";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -36,11 +37,21 @@ const answers = await enquirer.prompt<{
 const { title, summary, tags } = answers;
 
 // Generate slug from title (kebab-case)
-const slug = title
+let slug = title
   .toLowerCase()
   .replace(/[^a-z0-9\s-]/g, "")
   .replace(/\s+/g, "-")
-  .replace(/-+/g, "-");
+  .replace(/-+/g, "-")
+  .trim();
+
+// Validate slug is not empty
+if (!slug) {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  slug = `untitled-${timestamp}`;
+  console.warn(
+    `⚠️  Title contains no alphanumeric characters. Using fallback slug: ${slug}`,
+  );
+}
 
 const filename = `${slug}.mdx`;
 
@@ -79,27 +90,25 @@ const tagsArray = tags
   .map((tag) => tag.trim())
   .filter((tag) => tag.length > 0);
 
-// Build frontmatter
-const frontmatterLines = [`---`, `title: "${title}"`];
+// Build frontmatter object
+const frontmatterData: {
+  title: string;
+  summary?: string;
+  tags: string[];
+} = {
+  title,
+  tags: tagsArray,
+};
 
 if (summary.trim()) {
-  frontmatterLines.push(`summary: "${summary}"`);
+  frontmatterData.summary = summary;
 }
 
-if (tagsArray.length > 0) {
-  frontmatterLines.push(
-    `tags: [${tagsArray.map((tag) => `"${tag}"`).join(", ")}]`,
-  );
-} else {
-  frontmatterLines.push(`tags: []`);
-}
-
-frontmatterLines.push(`---`, ``, ``);
-
-const frontmatter = frontmatterLines.join("\n");
+// Safely generate frontmatter with gray-matter
+const content = matter.stringify("", frontmatterData);
 
 // Write the draft file
-fs.writeFileSync(draftPath, frontmatter, "utf8");
+fs.writeFileSync(draftPath, content, "utf8");
 
 console.log(`\n✅ Created draft: ${draftPath}`);
 console.log(`\nNext steps:`);

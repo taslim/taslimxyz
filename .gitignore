@@ -49,5 +49,8 @@ yarn-error.log*
 docs
 legacy
 
+#agent files
+.cursor/
+
 # blog drafts (work in progress, not published yet)
 src/content/blog/drafts/*.mdx

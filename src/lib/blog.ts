@@ -31,7 +31,8 @@ export function getBlogPosts(): BlogPost[] {
     .readdirSync(postsDir)
     .filter((f) => f.endsWith(".mdx"))
     .filter((f) => {
-      // Exclude files in the drafts subdirectory
+      // Ensure only regular files are included (not directories like drafts/)
+      // Note: readdirSync is non-recursive, so subdirectory contents are not listed
       const filePath = path.join(postsDir, f);
       const stats = fs.statSync(filePath);
       return stats.isFile();
