@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 
 export interface CreditsProps {
-  children: ReactNode;
+  children?: ReactNode;
+  content?: string;
 }
 
-export function Credits({ children }: CreditsProps) {
-  return <div className="blog-credits">{children}</div>;
+export function Credits({ children, content }: CreditsProps) {
+  return <div className="blog-credits">{content ?? children}</div>;
 }

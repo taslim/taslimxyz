@@ -1,0 +1,133 @@
+---
+title: "Sharing My USPS Mail Alerts Apps Script"
+publishedAt: "2025-03-23"
+summary:
+  "Discover how I automated USPS Mail Alerts with a simple Google Apps Script.
+  From scanning emails to creating Google Task reminders, I built a system that
+  optimizes my mailbox-checking routine. Check it out and contribute to making
+  mail-checking effortless!"
+tags: ["building", "automation", "google-apps-script", "open-source"]
+---
+
+> _tl;dr – USPS Mail Alerts
+> ([GitHub repo here](https://github.com/taslim/usps-mail-alerts)) is a Google
+> Apps Script that automatically creates Google Tasks reminders based on USPS
+> Informed Delivery emails._
+
+I remember the first time I stumbled across Google Apps Script in college, my
+mind was blown to pieces. The sheer possibilities of extending the capabilities
+of your Google apps was inviting, even though I couldn't write a lick of code
+back then _(I still can't write now. I just understand it better)_. Fast-forward
+to today, and the itch to build cool stuff never left me. The twist is that LLMs
+can now write code for you. I started by conjuring complex Google Sheets
+formulas with AI chatbots, then quickly graduated to building Apps Scripts. It's
+been a wild journey. And today, I'd love to share one of those projects with
+you—my USPS Mail Alerts Apps Script.
+
+## The Idea
+
+It all started in the summer of 2023. I had just moved to the United States six
+months prior and signed up for a free USPS service called
+[Informed Delivery](https://www.usps.com/manage/informed-delivery.htm). They
+basically send you an email in the morning if you have any physical mail heading
+your way that day. Being the diligent mailbox checker that I am, this was a
+lifesaver because it saved me from frequent trips to a disappointingly empty
+mailbox.
+
+But then, I thought, what if I could make this process even smoother? That's
+when the LLM craze hit, and I decided to build something nifty to make my
+mail-checking experience better.
+
+## v1 – Check email and create task
+
+My initial idea was simple: build an Apps Script to scan those Informed Delivery
+emails and create a task in Google Tasks if a new email showed up. Here's the
+flow I came up with:
+
+- I created a Gmail filter to move the USPS emails to a specific label.
+- The script scanned that label for new emails and added a task to Google Tasks
+  if it found one.
+
+See the code snippet for v1:
+
+```javascript
+function createTaskForNewEmails() {
+  var labelName = "a--notify/2-informed delivery";
+  var taskTitle = "Pick up mails";
+
+  var label = GmailApp.getUserLabelByName(labelName);
+  if (label === null) {
+    console.log("Label not found.");
+    return;
+  }
+
+  var threads = label.getThreads();
+
+  for (var i = 0; i < threads.length; i++) {
+    var today = new Date();
+
+    var thread = threads[i];
+    var messages = thread.getMessages();
+    var lastMessage = messages[messages.length - 1];
+
+    var messageDate = lastMessage.getDate();
+
+    // Create a new task
+    var task = Tasks.newTask();
+    task.title = taskTitle;
+    task.due = dueDate.toISOString();
+
+    // Save the task
+    var taskListId = "taskID"; // Replace with your task list ID
+    Tasks.Tasks.insert(task, taskListId);
+
+    break; // Exit the loop after creating a task for the first new email
+  }
+}
+```
+
+You can already tell some of the problems with v1:
+
+- If USPS changed their email formatting and it breaks my filter, I wouldn't
+  receive the emails under the label, which meant no reminders.
+- If I didn't clear the reminder after picking up even one piece of mail, my
+  Google Tasks would get clogged.
+- Picking up mail one piece at a time was ridiculously inefficient.
+
+## v2 – Make it better!
+
+In just one year, the models got incredibly better. Everyone was experimenting
+with more complex apps including me. I even built a
+[fortune cookie app](https://fortune.nownow.ai/) but I digress. Inspired by how
+far AI-assisted coding had come, I redesigned my mail alert apps script and
+fired up my AI chatbots to help code it.
+
+What I improved:
+
+- Instead of relying on labels, the script now scans the inbox directly for USPS
+  Informed Delivery emails.
+- It identifies how many mail pieces are expected and includes that number in
+  the task description so I don't rush to the mailbox if it's just one letter.
+- It checks if a task already exists for the day and updates it rather than
+  creating a new one. It even accumulates the total count of mail pieces, so I
+  only check the mailbox when it's worth the trip.
+- Introduced an ad-checker to detect if the email is just an ad. Because why
+  waste a trip if it's all spammy promos and no physical mail at all?
+
+Today, I'm open-sourcing v2 of this script so we can all improve our
+mailbox-checking experience and optimize our laziness _(I mean efficiency 😂)_
+together.
+[See the GitHub repo here](https://github.com/taslim/usps-mail-alerts/). You can
+also find the
+[README](https://github.com/taslim/usps-mail-alerts/?tab=readme-ov-file#usps-mail-alerts)
+in the GitHub repo, with straightforward instructions even for folks who don't
+code.
+
+Let me know what you think! And if you have any suggestions or improvements,
+feel free to contribute.
+
+Stay building! 🚀
+
+<Comment>
+  [Comment on Hacker News](https://news.ycombinator.com/item?id=43456355)
+</Comment>

@@ -1,5 +1,6 @@
 export interface CommentProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  content?: string;
 }
 
 /**
@@ -28,8 +29,9 @@ function parseMarkdownLink(children: React.ReactNode): {
   return null;
 }
 
-export function Comment({ children }: CommentProps) {
-  const parsedLink = parseMarkdownLink(children);
+export function Comment({ children, content }: CommentProps) {
+  const text = content ?? children;
+  const parsedLink = parseMarkdownLink(text);
 
   if (parsedLink) {
     return (
@@ -43,10 +45,10 @@ export function Comment({ children }: CommentProps) {
     );
   }
 
-  // Fallback: render children as-is
+  // Fallback: render text as-is
   return (
     <p className="blog-comment">
-      <strong>{children}</strong>
+      <strong>{text}</strong>
     </p>
   );
 }
