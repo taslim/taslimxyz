@@ -70,7 +70,7 @@ export async function generateMetadata({
   // 3. Default blog OG image (fallback)
   const ogImage = post.image
     ? resolveImagePath(post.image, slug)
-    : extractFirstImage(post.content, slug) ?? "/og-blog.png";
+    : (extractFirstImage(post.content, slug) ?? "/og-blog.png");
 
   return {
     title: `${post.title}`,

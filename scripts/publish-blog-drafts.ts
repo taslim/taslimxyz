@@ -175,7 +175,14 @@ for (const slug of selected) {
     // Add any other fields that might exist (except the ones we've already handled)
     for (const [key, value] of Object.entries(parsed.data)) {
       if (
-        !["title", "publishedAt", "updatedAt", "summary", "image", "tags"].includes(key)
+        ![
+          "title",
+          "publishedAt",
+          "updatedAt",
+          "summary",
+          "image",
+          "tags",
+        ].includes(key)
       ) {
         orderedData[key] = value;
       }

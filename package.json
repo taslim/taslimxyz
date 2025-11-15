@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsx scripts/sync-blog-images.ts && next build",
+    "build": "eslint . && tsc --noEmit && tsx scripts/sync-blog-images.ts && next build",
     "check": "eslint . && tsc --noEmit && prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "dev": "next dev --turbo",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
