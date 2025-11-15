@@ -12,6 +12,10 @@ import {
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { analytics } from "@/lib/analytics";
+import { AnalyticsClient } from "@/components/analytics-client";
+import { WebVitalsReporter } from "@/components/web-vitals-reporter";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.taslim.xyz"),
@@ -83,6 +87,9 @@ const montserrat = Montserrat({
   variable: "--font-montserrat-family",
 });
 
+const isAnalyticsEnabled = analytics.isEnabled();
+const gaMeasurementId = analytics.measurementId;
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -102,7 +109,16 @@ export default function RootLayout({
           </main>
           <Footer />
         </ThemeProvider>
+        {isAnalyticsEnabled ? (
+          <>
+            <AnalyticsClient />
+            <WebVitalsReporter />
+          </>
+        ) : null}
       </body>
+      {isAnalyticsEnabled && gaMeasurementId ? (
+        <GoogleAnalytics gaId={gaMeasurementId} />
+      ) : null}
     </html>
   );
 }
