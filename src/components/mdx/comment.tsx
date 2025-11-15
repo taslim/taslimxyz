@@ -110,37 +110,105 @@ function extractStringContent(node: ReactNode): string | null {
   return null;
 }
 
-export function Comment({ children, content }: CommentProps) {
-  // Try to extract string content from either content or children
-  const stringContent = content ?? extractStringContent(children);
+/**
+ * Extracts link data (text and URL) from ReactNode.
+ * Handles both markdown strings and React link elements.
+ */
+function extractLinkData(
+  node: ReactNode,
+): { text: string; url: string } | null {
+  // Try React element first (Link or <a> tag)
+  if (isValidElement(node)) {
+    const props = node.props as Record<string, unknown>;
 
-  // If we have valid string content, try to parse it as a markdown link
+    // Check if it's a link element with href
+    if (typeof props.href === "string" && props.href) {
+      const text = extractStringContent(props.children as ReactNode);
+      if (text) {
+        return { text, url: props.href };
+      }
+    }
+
+    // If it's a wrapper element (like <p>), try to extract from children
+    if (props.children) {
+      return extractLinkData(props.children as ReactNode);
+    }
+  }
+
+  // Try extracting from array of children
+  if (Array.isArray(node)) {
+    const childrenArray = node as ReactNode[];
+    // Look for a single link element in the array
+    for (const child of childrenArray) {
+      if (isValidElement(child)) {
+        const props = child.props as Record<string, unknown>;
+        if (typeof props.href === "string" && props.href) {
+          const text = extractStringContent(props.children as ReactNode);
+          if (text) {
+            return { text, url: props.href };
+          }
+        }
+      }
+    }
+
+    // If no link element found, try to parse as markdown string
+    const stringContent = extractStringContent(node);
+    if (stringContent) {
+      return parseMarkdownLink(stringContent);
+    }
+  }
+
+  // Try markdown string format
+  const stringContent = extractStringContent(node);
   if (stringContent) {
-    const parsedLink = parseMarkdownLink(stringContent);
+    return parseMarkdownLink(stringContent);
+  }
 
-    const inner =
-      parsedLink && isSafeLink(parsedLink.url) ? (
-        <a
-          href={parsedLink.url}
-          {...(isExternalLink(parsedLink.url) && {
-            target: "_blank",
-            rel: "noopener noreferrer",
-          })}
-        >
-          {parsedLink.text}
-        </a>
-      ) : (
-        stringContent
-      );
+  return null;
+}
 
+export function Comment({ children, content }: CommentProps) {
+  // First, try to extract link data from content prop if provided
+  let linkData: { text: string; url: string } | null = null;
+
+  if (content) {
+    linkData = parseMarkdownLink(content);
+  } else {
+    // Extract from children (handles both React elements and markdown strings)
+    linkData = extractLinkData(children);
+  }
+
+  // If we found valid link data, render it as a link
+  if (linkData && isSafeLink(linkData.url)) {
     return (
       <p className="blog-comment">
-        <strong>{inner}</strong>
+        <strong>
+          <a
+            href={linkData.url}
+            {...(isExternalLink(linkData.url) && {
+              target: "_blank",
+              rel: "noopener noreferrer",
+            })}
+          >
+            {linkData.text}
+          </a>
+        </strong>
       </p>
     );
   }
 
-  // Fallback: unwrap a single <p> wrapper if present and render as-is
+  // Fallback: render as plain text or with existing content
+  const stringContent = content ?? extractStringContent(children);
+
+  if (stringContent) {
+    return (
+      <p className="blog-comment">
+        <strong>{stringContent}</strong>
+      </p>
+    );
+  }
+
+  // Final fallback: unwrap a single <p> wrapper if present and render as-is
   const effectiveChildren =
     isValidElement(children) &&
     children.type === "p" &&
