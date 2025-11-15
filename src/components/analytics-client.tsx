@@ -29,17 +29,18 @@ export function AnalyticsClient() {
       ? `${pathname}?${searchParamsString}`
       : pathname;
 
-    // Defer pageview tracking slightly to let Next.js update document.title
-    // after navigation. This ensures we capture the correct page title.
-    const timeoutId = setTimeout(() => {
+    // Defer pageview tracking until the next frame to let Next.js update
+    // document.title after navigation. This ensures we capture the correct
+    // page title. Using requestAnimationFrame is more reliable than setTimeout(0).
+    const rafId = window.requestAnimationFrame(() => {
       trackPageview({
         page_location: window.location.href,
         page_path: pagePath,
         page_title: document.title,
       });
-    }, 0);
+    });
 
-    return () => clearTimeout(timeoutId);
+    return () => window.cancelAnimationFrame(rafId);
   }, [pathname, searchParamsString]);
 
   return null;

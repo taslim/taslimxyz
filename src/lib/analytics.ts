@@ -25,7 +25,7 @@ const getGtag = () => {
 const withTrafficType = <T extends Record<string, unknown>>(params: T) =>
   isInternalTraffic ? { ...params, traffic_type: "internal" } : params;
 
-export const trackPageview = (params: PageviewParams) => {
+export const trackPageview = (params: PageviewParams): void => {
   if (!hasMeasurementId) {
     return;
   }
@@ -40,8 +40,8 @@ export const trackPageview = (params: PageviewParams) => {
     "event",
     "page_view",
     withTrafficType({
-      send_to: measurementId,
       ...params,
+      send_to: measurementId,
     }),
   );
 };
@@ -61,8 +61,8 @@ export const trackEvent = (eventName: string, params?: EventParams): void => {
     "event",
     eventName,
     withTrafficType({
+      ...(params ?? {}),
       send_to: measurementId,
-      ...params,
     }),
   );
 };

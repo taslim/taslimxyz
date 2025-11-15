@@ -87,7 +87,6 @@ const montserrat = Montserrat({
   variable: "--font-montserrat-family",
 });
 
-const isAnalyticsEnabled = analytics.isEnabled();
 const gaMeasurementId = analytics.measurementId;
 
 export default function RootLayout({
@@ -109,13 +108,11 @@ export default function RootLayout({
           </main>
           <Footer />
         </ThemeProvider>
-        {isAnalyticsEnabled ? (
+        {gaMeasurementId ? (
           <>
             <AnalyticsClient />
             <WebVitalsReporter />
-            {gaMeasurementId ? (
-              <GoogleAnalytics gaId={gaMeasurementId} />
-            ) : null}
+            <GoogleAnalytics gaId={gaMeasurementId} />
           </>
         ) : null}
       </body>
