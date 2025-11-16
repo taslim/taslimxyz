@@ -5,6 +5,8 @@ export interface CommentProps {
   content?: string;
 }
 
+const MAX_NODE_TRAVERSAL_DEPTH = 20;
+
 /**
  * Validates that a URL uses a safe protocol to prevent XSS attacks.
  * Only allows http, https, and mailto protocols.
@@ -56,7 +58,11 @@ function parseMarkdownLink(text: string): { text: string; url: string } | null {
  * Safely extracts string content from ReactNode.
  * Returns null if the content cannot be converted to a valid string.
  */
-function extractStringContent(node: ReactNode): string | null {
+function extractStringContent(node: ReactNode, depth = 0): string | null {
+  if (depth >= MAX_NODE_TRAVERSAL_DEPTH) {
+    return null;
+  }
+
   // Handle direct string
   if (typeof node === "string") {
     return node.trim();
@@ -101,6 +107,7 @@ function extractStringContent(node: ReactNode): string | null {
     ) {
       return extractStringContent(
         (node.props as { children: ReactNode }).children,
+        depth + 1,
       );
     }
     return null;
@@ -116,14 +123,19 @@ function extractStringContent(node: ReactNode): string | null {
  */
 function extractLinkData(
   node: ReactNode,
+  depth = 0,
 ): { text: string; url: string } | null {
+  if (depth >= MAX_NODE_TRAVERSAL_DEPTH) {
+    return null;
+  }
+
   // Try React element first (Link or <a> tag)
   if (isValidElement(node)) {
     const props = node.props as Record<string, unknown>;
 
     // Check if it's a link element with href
     if (typeof props.href === "string" && props.href) {
-      const text = extractStringContent(props.children as ReactNode);
+      const text = extractStringContent(props.children as ReactNode, depth + 1);
       if (text) {
         return { text, url: props.href };
       }
@@ -131,7 +143,7 @@ function extractLinkData(
 
     // If it's a wrapper element (like <p>), try to extract from children
     if (props.children) {
-      return extractLinkData(props.children as ReactNode);
+      return extractLinkData(props.children as ReactNode, depth + 1);
     }
   }
 
@@ -143,7 +155,10 @@ function extractLinkData(
       if (isValidElement(child)) {
         const props = child.props as Record<string, unknown>;
         if (typeof props.href === "string" && props.href) {
-          const text = extractStringContent(props.children as ReactNode);
+          const text = extractStringContent(
+            props.children as ReactNode,
+            depth + 1,
+          );
           if (text) {
             return { text, url: props.href };
           }
@@ -152,14 +167,14 @@ function extractLinkData(
     }
 
     // If no link element found, try to parse as markdown string
-    const stringContent = extractStringContent(node);
+    const stringContent = extractStringContent(node, depth + 1);
     if (stringContent) {
       return parseMarkdownLink(stringContent);
     }
   }
 
   // Try markdown string format
-  const stringContent = extractStringContent(node);
+  const stringContent = extractStringContent(node, depth + 1);
   if (stringContent) {
     return parseMarkdownLink(stringContent);
   }
