@@ -63,6 +63,20 @@ function extractAttribute(tag: string, attrName: string): string | undefined {
 }
 
 /**
+ * Strip disallowed HTML tags from feed content to ensure RSS validation compliance.
+ * Removes tags that are flagged as dangerous or non-standard by feed validators.
+ * This is a defensive layer to catch any tags that weren't converted during MDX processing.
+ */
+function stripDisallowedTags(html: string): string {
+  return html
+    .replace(/<\/?comment\b[^>]*>/gi, "") // Remove HTML comment tags (not standard <!-- --> comments)
+    .replace(/<\/?credits\b[^>]*>/gi, "") // Remove non-standard credits tags
+    .replace(/<\/?script\b[^>]*>/gi, "") // Remove script tags for security
+    .replace(/<\/?embed\b[^>]*>/gi, "") // Remove embed tags
+    .replace(/<\/?object\b[^>]*>/gi, ""); // Remove object tags
+}
+
+/**
  * Compile MDX content to static HTML for RSS feeds
  */
 async function compilePostToHtml(
@@ -175,11 +189,15 @@ async function compilePostToHtml(
 
     // Convert <Credits> to italicized text
     // Multiline-aware, handles both content prop and children
+    // Matches both <Credits attr="value">...</Credits> and <Credits>...</Credits>
     processedContent = processedContent.replace(
-      /<Credits\s+([^>]*?)>([\s\S]*?)<\/Credits>/gs,
-      (match: string, attributes: string, children: string) => {
+      /<Credits(?:\s+([^>]*?))?>([\s\S]*?)<\/Credits>/gs,
+      (match: string, attributes: string | undefined, children: string) => {
         try {
-          const content = extractAttribute(attributes, "content");
+          const attrs = attributes ?? "";
+          const content = attrs
+            ? extractAttribute(attrs, "content")
+            : undefined;
           const text = content ?? (children ?? "").trim();
           return `\n\n*${text}*\n\n`;
         } catch (error) {
@@ -193,11 +211,15 @@ async function compilePostToHtml(
 
     // Convert <Comment> to bold text
     // Multiline-aware, handles both content prop and children
+    // Matches both <Comment attr="value">...</Comment> and <Comment>...</Comment>
     processedContent = processedContent.replace(
-      /<Comment\s+([^>]*?)>([\s\S]*?)<\/Comment>/gs,
-      (match: string, attributes: string, children: string) => {
+      /<Comment(?:\s+([^>]*?))?>([\s\S]*?)<\/Comment>/gs,
+      (match: string, attributes: string | undefined, children: string) => {
         try {
-          const content = extractAttribute(attributes, "content");
+          const attrs = attributes ?? "";
+          const content = attrs
+            ? extractAttribute(attrs, "content")
+            : undefined;
           const text = content ?? (children ?? "").trim();
           return `\n\n**${text}**\n\n`;
         } catch (error) {
@@ -215,7 +237,8 @@ async function compilePostToHtml(
       breaks: false,
     });
 
-    return html;
+    // Strip any remaining disallowed tags for RSS validation compliance
+    return stripDisallowedTags(html);
   } catch (error) {
     // Log error with context for debugging
     const errorMsg = error instanceof Error ? error.message : String(error);
