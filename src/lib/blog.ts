@@ -16,6 +16,10 @@ export interface BlogPostWithContent extends BlogPost {
   content: string;
 }
 
+export interface BlogFeedItem extends BlogPost {
+  url: string;
+}
+
 /**
  * Get all blog posts with metadata
  * Returns posts sorted by date (newest first)
@@ -74,6 +78,20 @@ export function getBlogPosts(): BlogPost[] {
     (a, b) =>
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
   );
+}
+
+/**
+ * Get blog posts formatted for feed generation with absolute URLs
+ */
+export function getBlogFeedItems(baseUrl: string): BlogFeedItem[] {
+  const normalizedBaseUrl = baseUrl.endsWith("/")
+    ? baseUrl.slice(0, -1)
+    : baseUrl;
+
+  return getBlogPosts().map((post) => ({
+    ...post,
+    url: `${normalizedBaseUrl}/blog/${encodeURIComponent(post.slug)}`,
+  }));
 }
 
 /**

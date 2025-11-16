@@ -17,26 +17,26 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { analytics } from "@/lib/analytics";
 import { AnalyticsClient } from "@/components/analytics-client";
 import { WebVitalsReporter } from "@/components/web-vitals-reporter";
+import { siteMetadata } from "@/lib/site-metadata";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.taslim.xyz"),
+  metadataBase: new URL(siteMetadata.siteUrl),
   title: {
-    default: "Taslim Okunola - Product | Strategy | Marketing",
-    template: "%s - Taslim Okunola",
+    default: `${siteMetadata.title} - Product | Strategy | Marketing`,
+    template: `%s - ${siteMetadata.title}`,
   },
-  description:
-    "Taslim Okunola is a Strategy and Operations Manager at Google. He helps product leaders answer big business questions.",
+  description: siteMetadata.description,
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://taslim.xyz",
-    siteName: "Taslim Okunola - Product | Strategy | Marketing",
+    url: siteMetadata.siteUrl,
+    siteName: `${siteMetadata.title} - Product | Strategy | Marketing`,
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Taslim Okunola",
+        alt: siteMetadata.title,
       },
     ],
   },
@@ -46,6 +46,11 @@ export const metadata: Metadata = {
     creator: "@taslimxyz",
   },
   icons: [{ rel: "icon", url: "/favicon.ico" }],
+  alternates: {
+    types: {
+      "application/rss+xml": `${siteMetadata.siteUrl}/rss.xml`,
+    },
+  },
 };
 
 const geist = Geist({
