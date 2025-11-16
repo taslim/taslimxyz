@@ -18,13 +18,45 @@ export interface BlogPostWithContent extends BlogPost {
 
 export interface BlogFeedItem extends BlogPost {
   url: string;
+  content: string;
 }
 
 /**
- * Get all blog posts with metadata
- * Returns posts sorted by date (newest first)
+ * Validates required blog post front-matter fields
+ * Returns the validated data or null if validation fails
  */
-export function getBlogPosts(): BlogPost[] {
+function validateBlogPostData(
+  slug: string,
+  data: matter.GrayMatterFile<string>["data"],
+): { title: string; publishedAt: string; summary: string } | null {
+  // Validate required fields
+  if (!data.title || typeof data.title !== "string") {
+    console.error(`[Blog] Missing or invalid 'title' for slug: ${slug}`);
+    return null;
+  }
+  if (!data.publishedAt || typeof data.publishedAt !== "string") {
+    console.error(`[Blog] Missing or invalid 'publishedAt' for slug: ${slug}`);
+    return null;
+  }
+  if (!data.summary || typeof data.summary !== "string") {
+    console.error(`[Blog] Missing or invalid 'summary' for slug: ${slug}`);
+    return null;
+  }
+
+  return {
+    title: data.title,
+    publishedAt: data.publishedAt,
+    summary: data.summary,
+  };
+}
+
+/**
+ * Generic helper to process all blog posts with a custom mapper function
+ * Handles directory traversal, file reading, and sorting
+ */
+function processBlogPosts<T extends { publishedAt: string }>(
+  mapper: (slug: string, parsed: matter.GrayMatterFile<string>) => T | null,
+): T[] {
   const postsDir = path.join(process.cwd(), "src/content/blog");
 
   // Check if directory exists
@@ -32,7 +64,7 @@ export function getBlogPosts(): BlogPost[] {
     return [];
   }
 
-  const posts: BlogPost[] = [];
+  const posts: (T | null)[] = [];
 
   // Read year directories (e.g., 2024, 2025)
   const yearDirs = fs.readdirSync(postsDir).filter((item) => {
@@ -60,35 +92,58 @@ export function getBlogPosts(): BlogPost[] {
       }
 
       const fileContents = fs.readFileSync(mdxPath, "utf8");
-      const { data } = matter(fileContents);
+      const parsed = matter(fileContents);
 
-      posts.push({
-        slug,
-        title: data.title as string,
-        publishedAt: data.publishedAt as string,
-        updatedAt: data.updatedAt as string | undefined,
-        summary: data.summary as string,
-        image: data.image as string | undefined,
-        tags: (data.tags as string[]) || [],
-      });
+      posts.push(mapper(slug, parsed));
     }
   }
 
-  return posts.sort(
+  // Filter out null entries and sort by date
+  const validPosts = posts.filter((post): post is T => post !== null);
+
+  return validPosts.sort(
     (a, b) =>
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
   );
 }
 
 /**
- * Get blog posts formatted for feed generation with absolute URLs
+ * Get all blog posts with metadata
+ * Returns posts sorted by date (newest first)
+ */
+export function getBlogPosts(): BlogPost[] {
+  return processBlogPosts((slug, { data }) => {
+    const validated = validateBlogPostData(slug, data);
+    if (!validated) return null;
+
+    return {
+      slug,
+      ...validated,
+      updatedAt: data.updatedAt as string | undefined,
+      image: data.image as string | undefined,
+      tags: Array.isArray(data.tags) ? data.tags : [],
+    };
+  });
+}
+
+/**
+ * Get blog posts formatted for feed generation with absolute URLs and content
  */
 export function getBlogFeedItems(baseUrl: string): BlogFeedItem[] {
-  return getBlogPosts().map((post) => {
-    const url = new URL(`/blog/${post.slug}`, baseUrl);
+  return processBlogPosts((slug, { data, content }) => {
+    const validated = validateBlogPostData(slug, data);
+    if (!validated) return null;
+
+    const url = new URL(`/blog/${slug}`, baseUrl);
+
     return {
-      ...post,
+      slug,
+      ...validated,
+      updatedAt: data.updatedAt as string | undefined,
+      image: data.image as string | undefined,
+      tags: Array.isArray(data.tags) ? data.tags : [],
       url: url.href,
+      content,
     };
   });
 }
@@ -118,14 +173,15 @@ export function getPost(slug: string): BlogPostWithContent | null {
       const fileContents = fs.readFileSync(filePath, "utf8");
       const { data, content } = matter(fileContents);
 
+      const validated = validateBlogPostData(slug, data);
+      if (!validated) return null;
+
       return {
         slug,
-        title: data.title as string,
-        publishedAt: data.publishedAt as string,
+        ...validated,
         updatedAt: data.updatedAt as string | undefined,
-        summary: data.summary as string,
         image: data.image as string | undefined,
-        tags: (data.tags as string[]) || [],
+        tags: Array.isArray(data.tags) ? data.tags : [],
         content,
       };
     }
