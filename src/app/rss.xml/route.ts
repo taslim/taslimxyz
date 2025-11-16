@@ -16,11 +16,11 @@ export async function GET(): Promise<Response> {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${escapeForXml(siteMetadata.title)}</title>
-    <link>${siteMetadata.siteUrl}</link>
+    <link>${escapeForXml(siteMetadata.siteUrl)}</link>
     <description>${escapeForXml(siteMetadata.feedDescription)}</description>
     <language>en-us</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
-    <atom:link href="${siteMetadata.siteUrl}/rss.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="${escapeForXml(siteMetadata.siteUrl)}/rss.xml" rel="self" type="application/rss+xml" />
     ${itemsXml}
   </channel>
 </rss>`;
@@ -29,13 +29,14 @@ export async function GET(): Promise<Response> {
     status: 200,
     headers: {
       "Content-Type": CONTENT_TYPE,
-      "Cache-Control": "public, max-age=0, must-revalidate",
+      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
     },
   });
 }
 
 function renderItem(item: ReturnType<typeof getBlogFeedItems>[number]): string {
   const publishedDate = formatRfc822(item.publishedAt);
+  const escapedUrl = escapeForXml(item.url);
 
   const categories = (item.tags ?? [])
     .map((tag) => `<category>${escapeForXml(tag)}</category>`)
@@ -45,8 +46,8 @@ function renderItem(item: ReturnType<typeof getBlogFeedItems>[number]): string {
 
   return `<item>
       <title>${escapeForXml(item.title)}</title>
-      <link>${item.url}</link>
-      <guid isPermaLink="true">${item.url}</guid>
+      <link>${escapedUrl}</link>
+      <guid isPermaLink="true">${escapedUrl}</guid>
       <pubDate>${publishedDate}</pubDate>
       ${categories}
       <description>${description}</description>

@@ -84,14 +84,13 @@ export function getBlogPosts(): BlogPost[] {
  * Get blog posts formatted for feed generation with absolute URLs
  */
 export function getBlogFeedItems(baseUrl: string): BlogFeedItem[] {
-  const normalizedBaseUrl = baseUrl.endsWith("/")
-    ? baseUrl.slice(0, -1)
-    : baseUrl;
-
-  return getBlogPosts().map((post) => ({
-    ...post,
-    url: `${normalizedBaseUrl}/blog/${encodeURIComponent(post.slug)}`,
-  }));
+  return getBlogPosts().map((post) => {
+    const url = new URL(`/blog/${post.slug}`, baseUrl);
+    return {
+      ...post,
+      url: url.href,
+    };
+  });
 }
 
 /**

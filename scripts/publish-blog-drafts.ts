@@ -308,10 +308,11 @@ if (publishedDrafts.length === 0) {
 
 const branchResult = runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
 if (!branchResult.success) {
-  console.error(
-    `❌ Publishing succeeded, but failed to determine current git branch: ${branchResult.stderr || branchResult.stdout}`,
+  console.warn(
+    `⚠️  Publishing succeeded, but failed to determine current git branch: ${branchResult.stderr || branchResult.stdout}`,
   );
-  process.exit(1);
+  console.warn("   Skipping git commit/push operations.");
+  process.exit(0);
 }
 
 const currentBranch = branchResult.stdout;
@@ -368,16 +369,16 @@ if (!commitResult.success) {
 console.log(`📝 Created git commit: "${commitMessage}"`);
 
 if (shouldPush) {
-  const pushResult = runGitCommand(["push", "origin", "main"]);
+  const pushResult = runGitCommand(["push", "origin", currentBranch]);
   if (!pushResult.success) {
     console.error(
       `❌ Publishing succeeded, but git push failed: ${pushResult.stderr || pushResult.stdout}`,
     );
     process.exit(1);
   }
-  console.log("🚀 Pushed commit to origin/main (--push)");
+  console.log(`🚀 Pushed commit to origin/${currentBranch} (--push)`);
 } else {
   console.log(
-    "ℹ️  Commit created locally. Run 'git push origin main' when ready.",
+    `ℹ️  Commit created locally. Run 'git push origin ${currentBranch}' when ready.`,
   );
 }
