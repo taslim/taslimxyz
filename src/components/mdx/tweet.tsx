@@ -72,15 +72,12 @@ export function Tweet({ id, url }: TweetProps) {
       {isVisible ? (
         <ReactTweet id={tweetId} />
       ) : (
-        // Placeholder skeleton while tweet loads
+        // Placeholder skeleton - tweet will load when scrolled into view
         <div
           className="flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
           style={{ minHeight: "200px" }}
-        >
-          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-            Loading tweet...
-          </div>
-        </div>
+          aria-label="Tweet placeholder"
+        />
       )}
     </div>
   );
