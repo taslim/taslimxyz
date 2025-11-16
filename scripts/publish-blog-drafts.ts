@@ -3,10 +3,15 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { spawnSync } from "child_process";
 import matter from "gray-matter";
 import enquirer from "enquirer";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.join(__dirname, "..");
+// Support `pnpm publish:drafts --push` to auto-push after committing.
+const cliArgs = process.argv.slice(2);
+const shouldPush = cliArgs.includes("--push");
 
 interface DraftFrontmatter {
   title: string;
@@ -15,6 +20,40 @@ interface DraftFrontmatter {
   image?: string;
   tags?: string[];
 }
+
+interface PublishedDraftMetadata {
+  slug: string;
+  title: string;
+  targetDirPath: string;
+}
+
+interface GitCommandResult {
+  success: boolean;
+  stdout: string;
+  stderr: string;
+}
+
+const runGitCommand = (args: string[]): GitCommandResult => {
+  const result = spawnSync("git", args, {
+    cwd: repoRoot,
+    encoding: "utf-8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  if (result.error) {
+    return {
+      success: false,
+      stdout: "",
+      stderr: result.error.message,
+    };
+  }
+
+  return {
+    success: result.status === 0,
+    stdout: typeof result.stdout === "string" ? result.stdout.trim() : "",
+    stderr: typeof result.stderr === "string" ? result.stderr.trim() : "",
+  };
+};
 
 const draftsDir = path.join(__dirname, "..", "src", "content", "drafts");
 const publishedDir = path.join(__dirname, "..", "src", "content", "blog");
@@ -97,6 +136,7 @@ console.log(`\nPublishing ${selected.length} draft(s):\n`);
 
 let published = 0;
 let errors = 0;
+const publishedDrafts: PublishedDraftMetadata[] = [];
 
 for (const slug of selected) {
   const draft = drafts.find((d) => d.slug === slug);
@@ -226,6 +266,11 @@ for (const slug of selected) {
       console.log(`   Published at: ${orderedData.publishedAt as string}`);
     }
     published++;
+    publishedDrafts.push({
+      slug,
+      title: frontmatter.title,
+      targetDirPath,
+    });
   } catch (error) {
     // Clean up temp directory if it exists
     if (tempDirPath && fs.existsSync(tempDirPath)) {
@@ -256,3 +301,83 @@ if (errors > 0) {
   console.log(`   Errors: ${errors}`);
 }
 console.log(`\n💡 Run 'pnpm dev' to see published posts.\n`);
+
+if (publishedDrafts.length === 0) {
+  process.exit(0);
+}
+
+const branchResult = runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
+if (!branchResult.success) {
+  console.error(
+    `❌ Publishing succeeded, but failed to determine current git branch: ${branchResult.stderr || branchResult.stdout}`,
+  );
+  process.exit(1);
+}
+
+const currentBranch = branchResult.stdout;
+if (currentBranch !== "main") {
+  console.log(
+    `Skipping git commit: current branch is '${currentBranch}', only committing on 'main'.${
+      shouldPush ? " (--push flag ignored)" : ""
+    }`,
+  );
+  process.exit(0);
+}
+
+const pathsToStage = [
+  ...new Set(
+    publishedDrafts.map((draft) =>
+      path.relative(repoRoot, draft.targetDirPath),
+    ),
+  ),
+];
+
+for (const relativePath of pathsToStage) {
+  const addResult = runGitCommand(["add", relativePath]);
+  if (!addResult.success) {
+    console.error(
+      `❌ Publishing succeeded, but failed to stage blog content (${relativePath}): ${addResult.stderr || addResult.stdout}`,
+    );
+    process.exit(1);
+  }
+}
+
+const firstPublishedDraft = publishedDrafts[0];
+if (!firstPublishedDraft) {
+  console.error(
+    "❌ Publishing succeeded, but failed to collect published drafts.",
+  );
+  process.exit(1);
+}
+
+const commitMessage =
+  publishedDrafts.length === 1
+    ? `publish: ${firstPublishedDraft.title}`
+    : `publish: ${firstPublishedDraft.title} and ${
+        publishedDrafts.length - 1
+      } more`;
+
+const commitResult = runGitCommand(["commit", "-m", commitMessage]);
+if (!commitResult.success) {
+  console.error(
+    `❌ Publishing succeeded, but git commit failed: ${commitResult.stderr || commitResult.stdout}`,
+  );
+  process.exit(1);
+}
+
+console.log(`📝 Created git commit: "${commitMessage}"`);
+
+if (shouldPush) {
+  const pushResult = runGitCommand(["push", "origin", "main"]);
+  if (!pushResult.success) {
+    console.error(
+      `❌ Publishing succeeded, but git push failed: ${pushResult.stderr || pushResult.stdout}`,
+    );
+    process.exit(1);
+  }
+  console.log("🚀 Pushed commit to origin/main (--push)");
+} else {
+  console.log(
+    "ℹ️  Commit created locally. Run 'git push origin main' when ready.",
+  );
+}
